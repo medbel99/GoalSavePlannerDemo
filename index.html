@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GoalSave – Savings Goal Planner</title>
+<meta name="description" content="GoalSave helps you save toward your goals with clarity and calm, ADHD-friendly design.">
+<style>
+/* ===================== RESET & BASE ===================== */
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  min-height:100vh;
+  transition:background .2s ease,color .2s ease;
+}
+h1,h2,h3,h4,p{margin:0;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+a{color:inherit;text-decoration:none;}
+ul{list-style:none;margin:0;padding:0;}
+svg{display:block;flex-shrink:0;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:10px;}
+
+/* ===================== THEME VARIABLES ===================== */
+:root, [data-theme="dark"]{
+  --bg:#0e1320;
+  --bg-soft:#0b0f1a;
+  --card:#161d30;
+  --card-hover:#1b2338;
+  --card-elevated:#1c2438;
+  --border:rgba(255,255,255,0.07);
+  --border-strong:rgba(255,255,255,0.14);
+  --text:#f3efe6;
+  --text-secondary:#8b93ab;
+  --text-faint:#5c6480;
+  --gold:#fcbe28;
+  --gold-soft:rgba(252,190,40,0.15);
+  --green:#3ddc97;
+  --green-soft:rgba(61,220,151,0.15);
+  --blue:#5b9df9;
+  --blue-soft:rgba(91,157,249,0.15);
+  --purple:#a78bfa;
+  --purple-soft:rgba(167,139,250,0.15);
+  --orange:#fb923c;
+  --orange-soft:rgba(251,146,60,0.15);
+  --red:#f87171;
+  --red-soft:rgba(248,113,113,0.15);
+  --teal:#2dd4bf;
+  --teal-soft:rgba(45,212,191,0.15);
+  --pink:#f472b6;
+  --pink-soft:rgba(244,114,182,0.15);
+  --shadow:0 10px 30px rgba(0,0,0,0.35);
+  --shadow-sm:0 4px 14px rgba(0,0,0,0.25);
+  --radius-lg:20px;
+  --radius-md:14px;
+  --radius-sm:10px;
+}
+[data-theme="light"]{
+  --bg:#f4f2ec;
+  --bg-soft:#ece9e1;
+  --card:#ffffff;
+  --card-hover:#faf9f6;
+  --card-elevated:#ffffff;
+  --border:rgba(20,20,30,0.08);
+  --border-strong:rgba(20,20,30,0.16);
+  --text:#20232f;
+  --text-secondary:#5c637a;
+  --text-faint:#8b93ab;
+  --gold:#fcbe28;
+  --gold-soft:rgba(252,190,40,0.12);
+  --green:#159a68;
+  --green-soft:rgba(21,154,104,0.12);
+  --blue:#2f6fe0;
+  --blue-soft:rgba(47,111,224,0.12);
+  --purple:#7c5cf0;
+  --purple-soft:rgba(124,92,240,0.12);
+  --orange:#e0711c;
+  --orange-soft:rgba(224,113,28,0.12);
+  --red:#d5453f;
+  --red-soft:rgba(213,69,63,0.12);
+  --teal:#0f9d8f;
+  --teal-soft:rgba(15,157,143,0.12);
+  --pink:#d3448a;
+  --pink-soft:rgba(211,68,138,0.12);
+  --shadow:0 10px 24px rgba(30,30,40,0.08);
+  --shadow-sm:0 4px 10px rgba(30,30,40,0.06);
+}
+body.density-compact .card{padding:1rem !important;}
+body.density-compact .stack-gap{gap:.6rem !important;}
+
+/* focus visibility */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:2px;
+  border-radius:6px;
+}
+
+/* ===================== LAYOUT ===================== */
+.app{display:flex;min-height:100vh;width:100%;}
+.sidebar{
+  width:264px;flex-shrink:0;background:var(--bg-soft);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:1.4rem 1.1rem;position:fixed;top:0;left:0;bottom:0;
+  z-index:60;transition:transform .25s ease;overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:.6rem;padding:.3rem .4rem 1.4rem;}
+.brand-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,var(--gold),#d99a1c);display:flex;align-items:center;justify-content:center;color:#1a1300;flex-shrink:0;}
+.brand-name{font-size:1.15rem;font-weight:800;letter-spacing:-.02em;}
+.icon-btn.sidebar-close{display:none;}
+.nav-list{display:flex;flex-direction:column;gap:.25rem;margin-top:.4rem;}
+.nav-item{
+  display:flex;align-items:center;gap:.7rem;padding:.65rem .8rem;border-radius:var(--radius-sm);
+  color:var(--text-secondary);font-weight:600;font-size:.92rem;border:1px solid transparent;background:none;width:100%;text-align:left;
+}
+.nav-item svg{width:19px;height:19px;}
+.nav-item:hover{background:var(--card);color:var(--text);}
+.nav-item.active{background:var(--gold-soft);color:var(--gold);border-color:rgba(240,180,41,0.25);}
+.sidebar-footer{margin-top:auto;padding-top:1rem;}
+.mini-motivation{
+  background:linear-gradient(160deg,var(--gold-soft),transparent);border:1px solid var(--border);border-radius:var(--radius-md);
+  padding:.9rem;font-size:.82rem;color:var(--text-secondary);line-height:1.4;
+}
+.mini-motivation strong{display:block;color:var(--text);font-size:.88rem;margin-bottom:.15rem;}
+
+/* ===================== DEMO MODE ===================== */
+.demo-badge{
+  display:inline-flex;align-items:center;gap:.3rem;padding:.16rem .5rem;border-radius:999px;
+  background:var(--purple-soft);color:var(--purple);font-size:.65rem;font-weight:800;
+  letter-spacing:.05em;text-transform:uppercase;flex-shrink:0;
+}
+.demo-badge svg{width:10px;height:10px;}
+.buy-now-wrap{margin-bottom:.8rem;}
+.buy-now-btn{
+  display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;
+  padding:.6rem .8rem;border-radius:var(--radius-sm);font-weight:700;font-size:.82rem;
+  background:linear-gradient(145deg,var(--gold),#d99a1c);color:#1a1300;border:1px solid transparent;
+  transition:filter .15s ease,transform .1s ease;
+}
+.buy-now-btn:hover{filter:brightness(1.06);}
+.buy-now-btn:active{transform:scale(.98);}
+.buy-now-btn svg{width:15px;height:15px;}
+.demo-reset-note{
+  font-size:.68rem;color:var(--text-faint);text-align:center;margin-top:.55rem;line-height:1.35;
+}
+
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:55;}
+.sidebar-backdrop.show{display:block;}
+
+.main{flex:1;margin-left:264px;padding:1.8rem 2.2rem 4rem;min-width:0;max-width:100%;}
+.page{display:none;}
+.page.active-page{display:block;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+.mobile-topbar{display:none;position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--border);
+  align-items:center;justify-content:space-between;padding:.8rem 1rem;margin:-1.8rem -2.2rem 1.2rem;}
+
+@media (max-width:1023px){
+  .sidebar{transform:translateX(-100%);width:78vw;max-width:300px;box-shadow:var(--shadow);}
+  .sidebar.open{transform:translateX(0);}
+  .icon-btn.sidebar-close{display:flex;margin-left:auto;}
+  .main{margin-left:0;padding:1rem 1rem 5rem;}
+  .mobile-topbar{display:flex;margin:-1rem -1rem 1.2rem;}
+}
+@media (max-width:480px){
+  .main{padding:.85rem .85rem 5rem;}
+}
+
+/* ===================== COMMON ELEMENTS ===================== */
+.icon-btn{
+  width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:var(--card);border:1px solid var(--border);color:var(--text-secondary);flex-shrink:0;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--border-strong);}
+.icon-btn svg{width:18px;height:18px;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  padding:.65rem 1.1rem;border-radius:var(--radius-sm);font-weight:700;font-size:.88rem;
+  border:1px solid transparent;transition:transform .1s ease,filter .15s ease;white-space:nowrap;
+}
+.btn svg{width:16px;height:16px;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--gold);color:#231a02;}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-secondary{background:var(--card);color:var(--text);border-color:var(--border-strong);}
+.btn-secondary:hover{background:var(--card-hover);}
+.btn-ghost{background:transparent;color:var(--text-secondary);}
+.btn-ghost:hover{color:var(--text);}
+.btn-danger{background:var(--red);color:#2b0505;}
+.btn-danger:hover{filter:brightness(1.08);}
+.btn-sm{padding:.45rem .8rem;font-size:.8rem;}
+.btn-block{width:100%;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:1.3rem;box-shadow:var(--shadow-sm);
+}
+.pill{display:inline-flex;align-items:center;gap:.35rem;padding:.28rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700;}
+.pill svg{width:12px;height:12px;flex-shrink:0;}
+.pill-active{background:var(--blue-soft);color:var(--blue);}
+.pill-paused{background:rgba(150,150,160,0.15);color:var(--text-secondary);}
+.pill-completed{background:var(--green-soft);color:var(--green);}
+
+.progress-track{width:100%;height:9px;border-radius:999px;background:rgba(255,255,255,0.07);overflow:hidden;}
+[data-theme="light"] .progress-track{background:rgba(0,0,0,0.07);}
+.progress-fill{height:100%;border-radius:999px;transition:width .4s ease;}
+
+.section-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.6rem;flex-wrap:wrap;}
+.section-title{display:flex;align-items:center;gap:.5rem;font-size:1.05rem;font-weight:800;}
+.section-title svg{width:19px;height:19px;color:var(--gold);}
+.view-all{display:inline-flex;align-items:center;gap:.3rem;color:var(--text-secondary);font-weight:700;font-size:.83rem;background:none;border:none;padding:.3rem;}
+.view-all:hover{color:var(--gold);}
+.view-all svg{width:15px;height:15px;}
+
+.icon-badge{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.icon-badge svg{width:22px;height:22px;}
+
+.empty-state{text-align:center;padding:2.4rem 1.2rem;color:var(--text-secondary);}
+.empty-state .icon-badge{margin:0 auto 1rem;width:56px;height:56px;background:var(--gold-soft);color:var(--gold);}
+.empty-state .icon-badge svg{width:26px;height:26px;}
+.empty-state h3{color:var(--text);font-size:1.05rem;margin-bottom:.35rem;}
+.empty-state p{font-size:.88rem;margin-bottom:1.1rem;}
+
+.grid{display:grid;gap:1.1rem;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media (max-width:1200px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+.hidden{display:none !important;}
+.text-secondary{color:var(--text-secondary);}
+.text-faint{color:var(--text-faint);}
+.mt-1{margin-top:.5rem;} .mt-2{margin-top:1rem;} .mt-3{margin-top:1.5rem;}
+
+/* ===================== HEADER / DASHBOARD ===================== */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.4rem;flex-wrap:wrap;}
+.page-header h1{font-size:1.4rem;font-weight:800;letter-spacing:-.01em;}
+.page-header p{color:var(--text-secondary);font-size:.9rem;margin-top:.25rem;}
+
+.greeting-eyebrow{color:var(--text-secondary);font-size:.85rem;font-weight:600;}
+.greeting-name{font-size:1.6rem;font-weight:800;display:flex;align-items:center;gap:.5rem;margin-top:.15rem;}
+.greeting-tagline{color:var(--text-secondary);margin-top:.35rem;font-size:.92rem;}
+.edit-name-btn{background:none;border:none;color:var(--text-faint);width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;}
+.edit-name-btn:hover{color:var(--gold);background:var(--gold-soft);}
+.edit-name-btn svg{width:15px;height:15px;}
+
+.quick-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin:1.2rem 0 1.6rem;}
+.quick-actions .btn{flex:0 0 auto;}
+
+.stat-card{display:flex;align-items:center;justify-content:space-between;gap:.6rem;}
+.stat-card-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+.stat-card-icon svg{width:22px;height:22px;}
+.stat-label{font-size:.8rem;color:var(--text-secondary);font-weight:600;}
+.stat-value{font-size:1.5rem;font-weight:800;margin-top:.2rem;letter-spacing:-.02em;}
+
+.dash-columns{display:grid;grid-template-columns:1fr 340px;gap:1.4rem;align-items:start;margin-top:1.6rem;}
+@media (max-width:1023px){.dash-columns{grid-template-columns:1fr;}}
+.stack{display:flex;flex-direction:column;gap:1.4rem;}
+
+/* goal preview card */
+.goal-card{display:flex;flex-direction:column;gap:.85rem;position:relative;transition:border-color .15s ease,transform .15s ease;}
+.goal-card:hover{border-color:var(--border-strong);}
+.goal-card-top{display:flex;align-items:flex-start;justify-content:space-between;}
+.goal-card-body{background:none;border:none;padding:0;text-align:left;color:inherit;width:100%;display:flex;flex-direction:column;gap:.55rem;border-radius:10px;}
+.goal-card-body:hover .goal-name{color:var(--gold);}
+.goal-name{font-weight:800;font-size:1.02rem;transition:color .15s ease;}
+.goal-amounts{font-size:.85rem;color:var(--text-secondary);}
+.goal-amounts b{color:var(--text);font-size:.95rem;}
+.goal-meta-row{display:flex;align-items:center;justify-content:space-between;font-size:.78rem;color:var(--text-secondary);margin-top:.1rem;}
+.milestone-chip{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:700;padding:.3rem .6rem;border-radius:999px;background:var(--gold-soft);color:var(--gold);width:fit-content;}
+.milestone-chip svg{width:12px;height:12px;}
+.milestone-chip.done{background:var(--green-soft);color:var(--green);}
+.goal-card-actions{display:flex;gap:.5rem;margin-top:.2rem;}
+.goal-card.is-paused{opacity:.72;}
+.goal-card.is-completed{border-color:rgba(61,220,151,0.35);}
+
+.card-menu{position:relative;}
+.menu-dropdown{
+  position:absolute;right:0;top:44px;background:var(--card-elevated);border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow);min-width:170px;z-index:30;overflow:hidden;padding:.35rem;
+}
+.menu-dropdown button{
+  display:flex;align-items:center;gap:.55rem;width:100%;text-align:left;padding:.55rem .65rem;background:none;border:none;color:var(--text);
+  font-size:.85rem;font-weight:600;border-radius:8px;
+}
+.menu-dropdown button svg{width:16px;height:16px;flex-shrink:0;}
+.menu-dropdown button:hover{background:var(--card-hover);}
+.menu-dropdown button.danger{color:var(--red);}
+
+/* fund preview row */
+.fund-row{display:flex;align-items:center;gap:.7rem;padding:.6rem 0;border-bottom:1px solid var(--border);}
+.fund-row:last-child{border-bottom:none;}
+.fund-row-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.fund-row-icon svg{width:16px;height:16px;}
+.fund-row-body{flex:1;min-width:0;}
+.fund-row-top{display:flex;justify-content:space-between;font-size:.85rem;font-weight:700;margin-bottom:.3rem;}
+.fund-row-top span:last-child{color:var(--text-secondary);font-weight:600;font-size:.78rem;}
+
+/* milestone stepper */
+.stepper{display:flex;align-items:flex-start;justify-content:space-between;position:relative;padding:.6rem 0 0;}
+.stepper::before{content:"";position:absolute;top:22px;left:5%;right:5%;height:2px;background:var(--border-strong);z-index:0;}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:1;gap:.4rem;min-width:0;}
+.step-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card);border:2px solid var(--border-strong);color:var(--text-faint);font-size:.7rem;font-weight:800;}
+.step-dot svg{width:15px;height:15px;}
+.step.reached .step-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.step.next .step-dot{border-color:var(--gold);color:var(--gold);box-shadow:0 0 0 4px var(--gold-soft);}
+.step-label{font-size:.78rem;font-weight:800;}
+.step-amount{font-size:.72rem;color:var(--text-secondary);}
+.step-status{font-size:.68rem;font-weight:700;color:var(--green);}
+.step.next .step-status{color:var(--gold);}
+.step:not(.reached):not(.next) .step-status{color:var(--text-faint);}
+
+/* ===================== FORMS ===================== */
+.field{margin-bottom:1rem;}
+.field label{display:block;font-size:.8rem;font-weight:700;color:var(--text-secondary);margin-bottom:.4rem;}
+.field-hint{font-size:.75rem;color:var(--text-faint);margin-top:.3rem;}
+.field-error{font-size:.76rem;color:var(--red);margin-top:.3rem;display:none;}
+.field.invalid .field-error{display:block;}
+.field.invalid input,.field.invalid select,.field.invalid textarea{border-color:var(--red) !important;}
+.input, select.input, textarea.input{
+  width:100%;padding:.7rem .85rem;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+  background:var(--bg-soft);color:var(--text);font-size:.9rem;
+}
+.input:focus{outline:2px solid var(--gold);outline-offset:1px;}
+textarea.input{resize:vertical;min-height:70px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media (max-width:480px){.field-row{grid-template-columns:1fr;}}
+
+.icon-picker,.color-picker{display:flex;flex-wrap:wrap;gap:.5rem;}
+.pick-btn{width:42px;height:42px;border-radius:10px;border:2px solid var(--border);background:var(--bg-soft);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);}
+.pick-btn svg{width:19px;height:19px;}
+.pick-btn.selected{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid transparent;}
+.swatch.selected{border-color:var(--text);box-shadow:0 0 0 2px var(--bg-soft);}
+
+.switch{position:relative;display:inline-flex;width:44px;height:26px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.switch-track{position:absolute;inset:0;background:var(--border-strong);border-radius:999px;transition:.2s;cursor:pointer;}
+.switch-track::before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+.switch input:checked + .switch-track{background:var(--gold);}
+.switch input:checked + .switch-track::before{transform:translateX(18px);}
+.switch input:focus-visible + .switch-track{outline:2px solid var(--gold);outline-offset:2px;}
+
+.segmented{display:flex;background:var(--bg-soft);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:4px;gap:4px;}
+.segmented button{flex:1;padding:.55rem .6rem;border-radius:8px;background:none;border:none;color:var(--text-secondary);font-weight:700;font-size:.83rem;display:flex;align-items:center;justify-content:center;gap:.4rem;}
+.segmented button svg{width:15px;height:15px;}
+.segmented button.active{background:var(--gold);color:#231a02;}
+
+/* ===================== MODALS ===================== */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,7,12,0.6);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card-elevated);border:1px solid var(--border-strong);border-radius:var(--radius-lg);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);padding:1.5rem;animation:modalIn .18s ease;}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:none;}}
+.modal.modal-wide{max-width:640px;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;}
+.modal-header h2{font-size:1.15rem;font-weight:800;}
+.modal-actions{display:flex;justify-content:flex-end;gap:.7rem;margin-top:1.3rem;flex-wrap:wrap;}
+.modal-actions.spread{justify-content:space-between;}
+
+/* detail modal */
+.detail-head{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;}
+.detail-icon{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;}
+.detail-icon svg{width:28px;height:28px;}
+.detail-title{font-size:1.2rem;font-weight:800;}
+.detail-status-msg{font-weight:700;font-size:.95rem;margin:.9rem 0;padding:.8rem 1rem;border-radius:var(--radius-sm);background:var(--gold-soft);color:var(--gold);}
+.detail-status-msg.done{background:var(--green-soft);color:var(--green);}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1rem;}
+@media (max-width:480px){.detail-grid{grid-template-columns:repeat(2,1fr);}}
+.detail-stat{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.7rem .8rem;}
+.detail-stat .lbl{font-size:.72rem;color:var(--text-secondary);font-weight:700;}
+.detail-stat .val{font-size:1rem;font-weight:800;margin-top:.15rem;}
+.detail-section-title{font-size:.85rem;font-weight:800;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;margin:1.2rem 0 .6rem;}
+.contrib-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border);gap:.6rem;}
+.contrib-row:last-child{border-bottom:none;}
+.contrib-info{min-width:0;}
+.contrib-amount{font-weight:800;color:var(--green);}
+.contrib-date{font-size:.76rem;color:var(--text-secondary);}
+.contrib-note{font-size:.78rem;color:var(--text-faint);margin-top:.1rem;overflow-wrap:anywhere;}
+.contrib-del{background:none;border:none;color:var(--text-faint);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.contrib-del:hover{color:var(--red);background:var(--red-soft);}
+.contrib-del svg{width:15px;height:15px;}
+.notes-box{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.8rem;font-size:.86rem;color:var(--text-secondary);line-height:1.5;}
+.detail-footer-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.3rem;}
+
+/* confirm modal */
+.confirm-icon{width:52px;height:52px;border-radius:14px;background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
+.confirm-icon svg{width:24px;height:24px;}
+.confirm-icon.neutral{background:var(--gold-soft);color:var(--gold);}
+
+/* ===================== FILTER BAR ===================== */
+.filter-bar{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center;margin-bottom:1.3rem;}
+.search-box{position:relative;flex:1;min-width:200px;}
+.search-box svg{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-faint);}
+.search-box input{padding-left:2.4rem;}
+.tabs{display:flex;gap:.4rem;background:var(--bg-soft);padding:4px;border-radius:999px;border:1px solid var(--border-strong);}
+.tab-btn{padding:.45rem .9rem;border-radius:999px;background:none;border:none;font-size:.8rem;font-weight:700;color:var(--text-secondary);}
+.tab-btn.active{background:var(--gold);color:#231a02;}
+.sort-select{width:auto;min-width:170px;}
+
+/* ===================== ANALYTICS ===================== */
+.chart-card{overflow-x:auto;}
+.chart-svg{width:100%;height:auto;min-width:420px;}
+.chart-label{fill:var(--text-secondary);font-size:10px;font-family:inherit;}
+.stat-mini{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;}
+.stat-mini .lbl{font-size:.76rem;color:var(--text-secondary);font-weight:700;}
+.stat-mini .val{font-size:1.25rem;font-weight:800;margin-top:.25rem;}
+.compare-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.75rem;}
+.compare-name{width:120px;flex-shrink:0;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.compare-track{flex:1;height:12px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden;}
+[data-theme="light"] .compare-track{background:rgba(0,0,0,0.06);}
+.compare-fill{height:100%;border-radius:999px;}
+.compare-pct{width:44px;text-align:right;font-size:.8rem;font-weight:700;color:var(--text-secondary);flex-shrink:0;}
+
+/* ===================== SETTINGS ===================== */
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-label{font-weight:700;font-size:.9rem;}
+.settings-row-desc{font-size:.78rem;color:var(--text-secondary);margin-top:.2rem;}
+.settings-section{margin-bottom:1.3rem;}
+.settings-section h3{font-size:.95rem;font-weight:800;margin-bottom:.3rem;}
+.danger-zone{border-color:rgba(248,113,113,0.3);background:var(--red-soft);}
+
+/* ===================== TOASTS ===================== */
+.toast-container{position:fixed;bottom:1.2rem;right:1.2rem;z-index:200;display:flex;flex-direction:column;gap:.6rem;max-width:min(340px,90vw);}
+@media (max-width:640px){.toast-container{right:.6rem;left:.6rem;max-width:none;align-items:stretch;}}
+.toast{background:var(--card-elevated);border:1px solid var(--border-strong);border-left:4px solid var(--green);border-radius:12px;padding:.8rem 1rem;box-shadow:var(--shadow);font-size:.85rem;font-weight:600;animation:toastIn .2s ease;display:flex;align-items:center;gap:.6rem;}
+.toast.error{border-left-color:var(--red);}
+.toast svg{width:17px;height:17px;color:var(--green);flex-shrink:0;}
+.toast.error svg{color:var(--red);}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* Utility for long text safety */
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wrap-anywhere{overflow-wrap:anywhere;}
+
+/* =======================================================================
+   GOALSAVE DASHBOARD VISUAL REDESIGN
+   Presentation layer only — no markup/data/behavior changes.
+   ======================================================================= */
+
+/* --- Brand typography + refined light palette --- */
+body{
+  font-family:Inter,Manrope,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  letter-spacing:-0.01em;
+}
+[data-theme="light"]{
+  --bg:#f7f4ec;
+  --bg-soft:#fbf9f3;
+  --card:#fffdf8;
+  --card-hover:#fffaf0;
+  --card-elevated:#fffdf9;
+  --border:rgba(36,35,31,.08);
+  --border-strong:rgba(36,35,31,.13);
+  --text:#20211e;
+  --text-secondary:#6b6b64;
+  --text-faint:#9a988e;
+  --gold:#f2b72b;
+  --gold-soft:rgba(242,183,43,.13);
+  --shadow:0 12px 28px rgba(43,38,27,.055);
+  --shadow-sm:0 4px 16px rgba(43,38,27,.045);
+}
+[data-theme="dark"]{
+  --gold:#f5bc32;
+  --gold-soft:rgba(245,188,50,.14);
+}
+body{
+  background:
+    radial-gradient(circle at 84% -10%, rgba(242,183,43,.06), transparent 32%),
+    var(--bg);
+}
+
+/* --- Sidebar --- */
+.sidebar{
+  width:238px;
+  background:rgba(251,249,243,.78);
+  border-right:1px solid var(--border);
+  padding:1.25rem .9rem 1.1rem;
+  backdrop-filter:blur(10px);
+}
+[data-theme="dark"] .sidebar{
+  background:rgba(11,15,26,.82);
+}
+.brand{
+  gap:.55rem;
+  padding:.3rem .45rem 1.55rem;
+}
+.brand-mark{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  background:var(--gold);
+  color:#2a2107;
+  box-shadow:none;
+}
+.brand-name{font-size:1.08rem;font-weight:800;}
+.nav-list{gap:.12rem;margin-top:.15rem;}
+.nav-item{
+  padding:.68rem .72rem;
+  border:0;
+  border-radius:10px;
+  font-size:.88rem;
+  color:var(--text-secondary);
+}
+.nav-item svg{width:17px;height:17px;opacity:.8;}
+.nav-item:hover{
+  background:rgba(0,0,0,.025);
+  color:var(--text);
+}
+[data-theme="dark"] .nav-item:hover{background:rgba(255,255,255,.035);}
+.nav-item.active{
+  background:var(--gold-soft);
+  color:#7f6112;
+  border:0;
+}
+[data-theme="dark"] .nav-item.active{color:var(--gold);}
+.mini-motivation{
+  background:transparent;
+  border:0;
+  border-top:1px solid var(--border);
+  border-radius:0;
+  padding:.9rem .4rem 0;
+  font-size:.76rem;
+  line-height:1.45;
+}
+.mini-motivation strong{
+  color:var(--text-secondary);
+  font-size:.8rem;
+  font-weight:700;
+}
+
+/* --- Main canvas --- */
+.main{
+  margin-left:238px;
+  padding:2.25rem 2.65rem 4rem;
+}
+.top-buy-bar{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:1rem;
+}
+.top-buy-bar .buy-now-wrap{
+  margin-bottom:0;
+}
+.top-buy-bar .buy-now-btn{
+  width:auto;
+  min-width:170px;
+  padding:.65rem 1rem;
+  box-shadow:0 4px 12px rgba(242,183,43,.12);
+}
+.main > .page{
+  max-width:1480px;
+  margin:0 auto;
+}
+.page-header{margin-bottom:1.7rem;}
+.greeting-eyebrow{
+  font-size:.78rem;
+  color:var(--text-faint);
+  font-weight:700;
+  letter-spacing:.01em;
+}
+.greeting-name{
+  font-size:clamp(1.85rem,2.4vw,2.15rem);
+  line-height:1.08;
+  letter-spacing:-.035em;
+  font-weight:800;
+  margin-top:.32rem;
+}
+.greeting-tagline{
+  margin-top:.55rem;
+  font-size:.9rem;
+  color:var(--text-secondary);
+}
+.edit-name-btn{
+  width:26px;
+  height:26px;
+  margin-left:.05rem;
+}
+.edit-name-btn svg{width:14px;height:14px;}
+
+/* --- Actions --- */
+.quick-actions{
+  gap:.45rem;
+  margin:.25rem 0 2.1rem;
+}
+.quick-actions .btn{
+  min-height:40px;
+}
+.btn{
+  border-radius:9px;
+  font-size:.84rem;
+}
+.btn-primary{
+  background:var(--gold);
+  color:#2c2208;
+  box-shadow:0 3px 10px rgba(242,183,43,.16);
+}
+.btn-secondary{
+  background:transparent;
+  color:var(--text-secondary);
+  border-color:transparent;
+}
+.btn-secondary:hover{
+  background:rgba(0,0,0,.025);
+  color:var(--text);
+  border-color:transparent;
+}
+[data-theme="dark"] .btn-secondary:hover{background:rgba(255,255,255,.04);}
+
+/* --- Dashboard metric rail: one system, not four cards --- */
+#page-home .grid-4{
+  grid-template-columns:repeat(4,1fr);
+  gap:0;
+  padding:.25rem 0;
+  margin-bottom:.45rem;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+#page-home .grid-4 .stat-card{
+  position:relative;
+  min-height:88px;
+  padding:1rem 1.25rem;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+#page-home .grid-4 .stat-card + .stat-card{
+  border-left:1px solid var(--border);
+}
+#page-home .stat-label{
+  font-size:.73rem;
+  letter-spacing:.01em;
+  text-transform:uppercase;
+}
+#page-home .stat-value{
+  font-size:1.72rem;
+  line-height:1;
+  margin-top:.35rem;
+  letter-spacing:-.035em;
+}
+#page-home .stat-card:first-child .stat-value{
+  font-size:2rem;
+}
+#page-home .stat-card-icon{
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  background:transparent !important;
+  color:var(--text-faint) !important;
+  opacity:.65;
+}
+#page-home .stat-card-icon svg{width:17px;height:17px;}
+
+/* --- Dashboard columns + section hierarchy --- */
+#page-home .dash-columns{
+  grid-template-columns:minmax(0,1fr) 330px;
+  gap:2.25rem;
+  margin-top:2.1rem;
+}
+#page-home .stack{gap:2rem;}
+#page-home .section-title-row{
+  margin-bottom:1.05rem;
+}
+#page-home .section-title{
+  font-size:1rem;
+  letter-spacing:-.01em;
+}
+#page-home .section-title svg{
+  width:17px;
+  height:17px;
+}
+#page-home .view-all{
+  font-size:.78rem;
+  color:var(--text-faint);
+}
+#page-home .view-all:hover{color:var(--gold);}
+
+/* --- Savings goals: primary visual focus --- */
+#page-home .grid-3{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1rem;
+}
+#page-home .goal-card{
+  gap:1rem;
+  min-height:224px;
+  padding:1.2rem;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 5px 18px rgba(43,38,27,.035);
+}
+[data-theme="dark"] #page-home .goal-card{
+  box-shadow:none;
+}
+#page-home .goal-card:hover{
+  transform:translateY(-1px);
+  border-color:rgba(242,183,43,.28);
+  box-shadow:0 9px 24px rgba(43,38,27,.07);
+}
+#page-home .goal-card-top{
+  min-height:34px;
+}
+#page-home .goal-card-top > .icon-badge{
+  width:34px;
+  height:34px;
+  border-radius:9px;
+  background:var(--bg-soft) !important;
+  color:var(--text-secondary) !important;
+}
+#page-home .goal-card-top > .icon-badge svg{width:17px;height:17px;}
+#page-home .goal-card-top > div:last-child > .pill{
+  font-size:.68rem;
+  padding:.22rem .48rem;
+  background:transparent;
+  color:var(--text-faint);
+}
+#page-home .goal-card.is-active .goal-card-top > div:last-child > .pill{
+  color:#8b6c1a;
+}
+[data-theme="dark"] #page-home .goal-card.is-active .goal-card-top > div:last-child > .pill{
+  color:var(--gold);
+}
+#page-home .goal-card-body{
+  gap:.62rem;
+}
+#page-home .goal-name{
+  font-size:1rem;
+  letter-spacing:-.015em;
+}
+#page-home .goal-amounts{
+  font-size:.8rem;
+}
+#page-home .goal-amounts b{
+  font-size:1.05rem;
+  letter-spacing:-.02em;
+}
+#page-home .progress-track{
+  height:8px;
+  background:rgba(31,31,29,.07);
+}
+[data-theme="dark"] #page-home .progress-track{
+  background:rgba(255,255,255,.07);
+}
+#page-home .progress-fill{
+  background:var(--gold) !important;
+}
+#page-home .goal-meta-row{
+  font-size:.72rem;
+}
+#page-home .milestone-chip{
+  padding:.26rem .48rem;
+  background:var(--gold-soft);
+  color:#806214;
+  font-size:.68rem;
+  border-radius:7px;
+}
+[data-theme="dark"] #page-home .milestone-chip{color:var(--gold);}
+#page-home .milestone-chip.done{
+  background:var(--green-soft);
+  color:var(--green);
+}
+#page-home .goal-card-actions{
+  margin-top:auto;
+  padding-top:.2rem;
+}
+#page-home .goal-card-actions .btn{
+  min-height:36px;
+}
+
+/* --- Milestones: quieter supporting surface --- */
+#page-home .dash-columns > .stack:first-child > .card{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  border-top:1px solid var(--border);
+  border-radius:0;
+  padding:1.45rem 0 0;
+}
+#page-home .stepper{
+  padding-top:.35rem;
+}
+#page-home .step-dot{
+  width:32px;
+  height:32px;
+  background:var(--gold-soft);
+  border-color:var(--gold);
+  color:var(--gold);
+}
+#page-home .step.reached .step-dot{
+  background:var(--green);
+  border-color:var(--green);
+  color:#fff;
+}
+#page-home .step.next .step-dot{
+  background:var(--gold);
+  border-color:var(--gold);
+  color:#231a02;
+  box-shadow:0 0 0 4px var(--gold-soft);
+}
+
+/* --- Sinking funds: compact secondary panel --- */
+#page-home .dash-columns > .stack:last-child > .card{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  border-top:1px solid var(--border);
+  border-radius:0;
+  padding:1.45rem 0 0;
+}
+#page-home .fund-row{
+  gap:.65rem;
+  padding:.82rem 0;
+  border-bottom:1px solid var(--border);
+}
+#page-home .fund-row-icon{
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  background:var(--bg-soft) !important;
+  color:var(--text-secondary) !important;
+}
+#page-home .fund-row-icon svg{width:15px;height:15px;}
+#page-home .fund-row-top{
+  font-size:.8rem;
+  margin-bottom:.38rem;
+}
+#page-home .fund-row-top span:last-child{
+  font-size:.73rem;
+}
+#page-home .fund-row .progress-track{height:6px;}
+#page-home .fund-row .progress-fill{
+  background:var(--gold) !important;
+}
+
+/* --- Shared card reduction where dashboard uses utility cards --- */
+#page-home .empty-state{
+  background:transparent;
+  border:1px dashed var(--border-strong);
+  box-shadow:none;
+  border-radius:14px;
+}
+
+/* --- Mobile/topbar polish --- */
+.mobile-topbar{
+  background:color-mix(in srgb, var(--bg) 92%, transparent);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+}
+@media (max-width:1200px){
+  #page-home .dash-columns{grid-template-columns:1fr;}
+  #page-home .dash-columns > .stack:last-child > .card{
+    padding-top:1.35rem;
+  }
+}
+@media (max-width:1023px){
+  .top-buy-bar{
+    justify-content:stretch;
+    margin-bottom:.9rem;
+  }
+  .top-buy-bar .buy-now-btn{
+    width:100%;
+  }
+  .sidebar{
+    width:280px;
+    background:var(--card);
+    box-shadow:0 16px 45px rgba(0,0,0,.12);
+  }
+  .main{
+    margin-left:0;
+    padding:1rem 1.15rem 5rem;
+  }
+  .main > .page{max-width:none;}
+  #page-home .grid-4{
+    grid-template-columns:repeat(2,1fr);
+  }
+  #page-home .grid-4 .stat-card:nth-child(3){
+    border-left:0;
+    border-top:1px solid var(--border);
+  }
+  #page-home .grid-4 .stat-card:nth-child(4){
+    border-top:1px solid var(--border);
+  }
+}
+@media (max-width:760px){
+  .greeting-name{font-size:1.72rem;}
+  .quick-actions{
+    margin-top:.4rem;
+    margin-bottom:1.65rem;
+  }
+  .quick-actions .btn-secondary{
+    padding:.52rem .2rem;
+  }
+  #page-home .grid-3{
+    grid-template-columns:1fr;
+  }
+  #page-home .goal-card{
+    min-height:0;
+  }
+}
+@media (max-width:480px){
+  .main{padding:.85rem .85rem 5rem;}
+  #page-home .grid-4 .stat-card{
+    min-height:78px;
+    padding:.9rem .85rem;
+  }
+  #page-home .stat-value{font-size:1.45rem;}
+  #page-home .stat-card:first-child .stat-value{font-size:1.7rem;}
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9C.7 8.5 2 5 5.5 5c2 0 3.3 1.2 4.5 3 1.2-1.8 2.5-3 4.5-3 3.5 0 4.8 3.5 3 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
+      </div>
+      <span class="brand-name">GoalSave</span>
+      <span class="demo-badge" title="This is a demo. Sample data resets automatically every 15 minutes.">Demo</span>
+      <button class="icon-btn sidebar-close" id="sidebarCloseBtn" aria-label="Close menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <nav class="nav-list" id="navList"></nav>
+    <div class="sidebar-footer">
+      <div class="mini-motivation">
+        <strong>Small steps today,</strong>
+        big dreams tomorrow. 🌟
+      </div>
+      <div class="demo-reset-note" id="demoResetNote"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="mobile-topbar">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Open menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="brand-name" style="font-size:1rem;display:flex;align-items:center;gap:.4rem;">GoalSave <span class="demo-badge" title="This is a demo. Sample data resets automatically every 15 minutes.">Demo</span></span>
+      <span style="width:38px;"></span>
+    </div>
+
+    <div class="top-buy-bar">
+      <div class="buy-now-wrap">
+        <a class="buy-now-btn" id="buyNowBtn" href="https://www.etsy.com/shop/YourShopName" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Buy Now on Etsy
+        </a>
+      </div>
+    </div>
+
+    <div id="page-home" class="page active-page"></div>
+    <div id="page-goals" class="page"></div>
+    <div id="page-funds" class="page"></div>
+    <div id="page-milestones" class="page"></div>
+    <div id="page-analytics" class="page"></div>
+    <div id="page-settings" class="page"></div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modalRoot"></div>
+<div class="toast-container" id="toastContainer"></div>
+<input type="file" id="importFileInput" accept=".csv,text/csv" hidden>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================================
+   CONSTANTS
+========================================================================= */
+const STORAGE_KEY = "goalsave_data_v1";
+
+/* ---- DEMO MODE ----
+   This build is a temporary demo: it always runs on sample data, lets the
+   visitor freely add/edit/delete during the session, and auto-resets back
+   to the original demo state on a fixed interval. */
+const DEMO_MODE = true;
+const DEMO_RESET_MS = 15 * 60 * 1000; // 15 minutes
+const DEMO_SEED_KEY = STORAGE_KEY + "__demo_seed_at";
+let demoResetTimer = null;
+let demoCountdownTimer = null;
+
+const CURRENCIES = [
+  {code:"USD",label:"US Dollar ($)"},
+  {code:"EUR",label:"Euro (€)"},
+  {code:"GBP",label:"British Pound (£)"},
+  {code:"JPY",label:"Japanese Yen (¥)"},
+  {code:"CAD",label:"Canadian Dollar (C$)"},
+  {code:"AUD",label:"Australian Dollar (A$)"},
+  {code:"INR",label:"Indian Rupee (₹)"},
+  {code:"CHF",label:"Swiss Franc (CHF)"},
+  {code:"NZD",label:"New Zealand Dollar (NZ$)"},
+  {code:"ZAR",label:"South African Rand (R)"}
+];
+
+const COLORS = [
+  {key:"gold",var:"--gold",soft:"--gold-soft"},
+  {key:"green",var:"--green",soft:"--green-soft"},
+  {key:"blue",var:"--blue",soft:"--blue-soft"},
+  {key:"purple",var:"--purple",soft:"--purple-soft"},
+  {key:"orange",var:"--orange",soft:"--orange-soft"},
+  {key:"red",var:"--red",soft:"--red-soft"},
+  {key:"teal",var:"--teal",soft:"--teal-soft"},
+  {key:"pink",var:"--pink",soft:"--pink-soft"}
+];
+
+const ICONS = {
+  piggy:'<path d="M12 21s-7-4.5-9.5-9C.7 8.5 2 5 5.5 5c2 0 3.3 1.2 4.5 3 1.2-1.8 2.5-3 4.5-3 3.5 0 4.8 3.5 3 7-2.5 4.5-9.5 9-9.5 9z"/>',
+  home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>',
+  laptop:'<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M2 20h20"/>',
+  plane:'<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>',
+  car:'<path d="M3 13l1.6-4.5A2 2 0 0 1 6.5 7h11a2 2 0 0 1 1.9 1.5L21 13"/><rect x="2" y="13" width="20" height="6" rx="1.5"/><circle cx="7" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/>',
+  gift:'<rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M12 8v13"/><path d="M3 12.5h18"/><path d="M12 8c-3 .3-4.5-1.8-3.2-3.4C10 3 12 5 12 8z"/><path d="M12 8c3 .3 4.5-1.8 3.2-3.4C13.9 3 12 5 12 8z"/>',
+  heart:'<path d="M12 21s-7-4.5-9.5-9C.7 8.5 2 5 5.5 5c2 0 3.3 1.2 4.5 3 1.2-1.8 2.5-3 4.5-3 3.5 0 4.8 3.5 3 7-2.5 4.5-9.5 9-9.5 9z"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5"/><path d="M4 4.5v17"/>',
+  gamepad:'<rect x="2" y="7" width="20" height="10" rx="4"/><line x1="7" y1="10" x2="7" y2="14"/><line x1="5" y1="12" x2="9" y2="12"/><circle cx="16" cy="10.5" r="1"/><circle cx="18.5" cy="13" r="1"/>',
+  shield:'<path d="M12 2l8 3.5v5.5c0 5-3.4 8.7-8 11-4.6-2.3-8-6-8-11V5.5z"/>',
+  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/>',
+  star:'<path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7L12 2z"/>',
+  flag:'<path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="17" rx="2"/><line x1="16" y1="2.5" x2="16" y2="6.5"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  bell:'<path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1z"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+  more:'<circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>',
+  arrowRight:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  close:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  download:'<path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/>',
+  upload:'<path d="M12 21V9"/><polyline points="7 14 12 9 17 14"/><path d="M5 3h14"/>',
+  chevronDown:'<polyline points="6 9 12 15 18 9"/>',
+  search:'<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  sun:'<circle cx="12" cy="12" r="4.2"/><line x1="12" y1="2" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22"/><line x1="4.2" y1="4.2" x2="6" y2="6"/><line x1="18" y1="18" x2="19.8" y2="19.8"/><line x1="2" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22" y2="12"/><line x1="4.2" y1="19.8" x2="6" y2="18"/><line x1="18" y1="6" x2="19.8" y2="4.2"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
+  system:'<rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/>',
+  barchart:'<rect x="4" y="10" width="3.4" height="10"/><rect x="10.3" y="4" width="3.4" height="16"/><rect x="16.6" y="13" width="3.4" height="7"/>',
+  info:'<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.7" r="1"/>',
+  pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+  play:'<polygon points="6 4 20 12 6 20 6 4"/>'
+};
+function icon(name, cls){
+  return '<svg class="'+(cls||"")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||ICONS.star)+'</svg>';
+}
+const ICON_PICKS = ["piggy","home","laptop","plane","car","gift","heart","book","gamepad","shield","briefcase","target","wallet","star"];
+
+const NAV_ITEMS = [
+  {page:"home", label:"Home", i:"home"},
+  {page:"goals", label:"Savings Goals", i:"target"},
+  {page:"funds", label:"Sinking Funds", i:"wallet"},
+  {page:"milestones", label:"Milestones", i:"star"},
+  {page:"analytics", label:"Analytics", i:"barchart"},
+  {page:"settings", label:"Settings", i:"gear"}
+];
+
+const QUOTES = [
+  "Progress, not perfection. Every little bit counts.",
+  "Small steps today, big goals tomorrow.",
+  "You're building momentum, one dollar at a time.",
+  "Consistency beats intensity. Keep going.",
+  "Future you says thank you.",
+  "A little saved today is a lot of peace tomorrow.",
+  "Tiny deposits, huge difference."
+];
+
+/* =========================================================================
+   STATE
+========================================================================= */
+const App = {
+  data: null,
+  state: {
+    page: "home",
+    openMenuId: null,
+    modalKind: null,
+    goalsFilter: { search:"", status:"all", sort:"updated" },
+    fundsFilter: { search:"", status:"all", sort:"updated" },
+    confirmCallback: null,
+    importCandidate: null
+  }
+};
+
+/* =========================================================================
+   UTILITIES
+========================================================================= */
+function uid(prefix){ return (prefix||"id")+"_"+Math.random().toString(36).slice(2,9)+Date.now().toString(36); }
+function nowISO(){ return new Date().toISOString(); }
+function round2(n){ n = Number(n)||0; return Math.round((n + Number.EPSILON) * 100) / 100; }
+function clamp(n,min,max){ return Math.min(max,Math.max(min,n)); }
+function escapeHtml(str){
+  return String(str==null?"":str).replace(/[&<>"']/g, function(ch){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
+  });
+}
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function parseLocalDate(str){
+  if(!str) return null;
+  const parts = String(str).split("-").map(Number);
+  if(parts.length<3 || parts.some(isNaN)) return null;
+  return new Date(parts[0], parts[1]-1, parts[2]);
+}
+function isValidDateStr(str){
+  const d = parseLocalDate(str);
+  return !!d && !isNaN(d.getTime());
+}
+function addDays(date, n){ const d = new Date(date); d.setDate(d.getDate()+n); return d; }
+function toDateStr(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function formatDate(str){
+  const d = parseLocalDate(str);
+  if(!d) return "—";
+  return d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+}
+function daysLeft(dateStr){
+  const target = parseLocalDate(dateStr);
+  if(!target) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  target.setHours(0,0,0,0);
+  return Math.round((target-today)/86400000);
+}
+function deadlineText(dateStr, status){
+  if(status==="completed") return "Completed";
+  if(!dateStr) return "No deadline set";
+  const d = daysLeft(dateStr);
+  if(d===null) return "No deadline set";
+  if(d<0) return "Target date passed";
+  if(d===0) return "Due today";
+  return d+" day"+(d===1?"":"s")+" left";
+}
+function formatMoney(amount){
+  const cur = (App.data && App.data.settings && App.data.settings.currency) || "USD";
+  const n = Number(amount)||0;
+  try{
+    return new Intl.NumberFormat(undefined,{style:"currency",currency:cur,maximumFractionDigits: cur==="JPY"?0:2, minimumFractionDigits: cur==="JPY"?0:2}).format(n);
+  }catch(e){
+    return "$"+n.toFixed(2);
+  }
+}
+function colorHex(key){
+  const el = document.documentElement;
+  const found = COLORS.find(c=>c.key===key) || COLORS[0];
+  return getComputedStyle(el).getPropertyValue(found.var).trim() || "#fcbe28";
+}
+function colorSoft(key){
+  const el = document.documentElement;
+  const found = COLORS.find(c=>c.key===key) || COLORS[0];
+  return getComputedStyle(el).getPropertyValue(found.soft).trim() || "rgba(240,180,41,.15)";
+}
+
+/* =========================================================================
+   STORAGE / VALIDATION / SAMPLE DATA
+========================================================================= */
+function defaultSettings(){
+  return {
+    displayName: "Alex",
+    currency: "USD",
+    theme: "light",
+    dayStartOffset: 0,
+    motivationalMessages: true,
+    density: "comfortable"
+  };
+}
+
+function validateData(raw){
+  try{
+    if(!raw || typeof raw !== "object") return null;
+    if(!Array.isArray(raw.goals) || !Array.isArray(raw.contributions) || !Array.isArray(raw.sinkingFunds) || !Array.isArray(raw.milestones)) return null;
+    const goals = raw.goals.filter(g => g && typeof g.id==="string" && typeof g.name==="string" && g.name.trim() && typeof g.target==="number" && g.target>0)
+      .map(g=>({
+        id:g.id, name:g.name, icon: ICON_PICKS.includes(g.icon)?g.icon:"target",
+        color: COLORS.some(c=>c.key===g.color)?g.color:"gold",
+        target: round2(g.target), targetDate: (g.targetDate && isValidDateStr(g.targetDate))? g.targetDate : "",
+        status: ["active","paused","completed"].includes(g.status)?g.status:"active",
+        note: typeof g.note==="string"? g.note : "",
+        createdAt: g.createdAt || nowISO(), updatedAt: g.updatedAt || g.createdAt || nowISO()
+      }));
+    const goalIds = new Set(goals.map(g=>g.id));
+    const funds = raw.sinkingFunds.filter(f=>f && typeof f.id==="string" && typeof f.name==="string" && f.name.trim() && typeof f.target==="number" && f.target>0)
+      .map(f=>({
+        id:f.id, name:f.name, icon: ICON_PICKS.includes(f.icon)?f.icon:"wallet",
+        color: COLORS.some(c=>c.key===f.color)?f.color:"blue",
+        target: round2(f.target), deadline:(f.deadline && isValidDateStr(f.deadline))? f.deadline : "",
+        status: ["active","paused","completed"].includes(f.status)?f.status:"active",
+        note: typeof f.note==="string"? f.note : "",
+        createdAt: f.createdAt || nowISO(), updatedAt: f.updatedAt || f.createdAt || nowISO()
+      }));
+    const fundIds = new Set(funds.map(f=>f.id));
+    const contributions = raw.contributions.filter(c=>c && typeof c.id==="string" && typeof c.amount==="number" && c.amount>0 && (c.targetType==="goal"||c.targetType==="fund") && typeof c.targetId==="string" && isValidDateStr(c.date))
+      .filter(c=> c.targetType==="goal" ? goalIds.has(c.targetId) : fundIds.has(c.targetId))
+      .map(c=>({ id:c.id, targetType:c.targetType, targetId:c.targetId, amount: round2(c.amount), date:c.date, note: typeof c.note==="string"?c.note:"", createdAt: c.createdAt||nowISO() }));
+    const milestones = raw.milestones.filter(m=>m && typeof m.id==="string" && typeof m.goalId==="string" && goalIds.has(m.goalId) && (m.type==="percent"||m.type==="amount") && typeof m.value==="number" && m.value>0)
+      .map(m=>({ id:m.id, goalId:m.goalId, type:m.type, value: round2(m.value), label: typeof m.label==="string" && m.label.trim() ? m.label : (m.type==="percent"? m.value+"%": "Custom"), note: typeof m.note==="string"?m.note:"", createdAt:m.createdAt||nowISO() }));
+    const settings = Object.assign(defaultSettings(), (raw.settings && typeof raw.settings==="object")?raw.settings:{});
+    if(!CURRENCIES.some(c=>c.code===settings.currency)) settings.currency = "USD";
+    if(!["dark","light","system"].includes(settings.theme)) settings.theme="light";
+    if(!["comfortable","compact"].includes(settings.density)) settings.density="comfortable";
+    const meta = (raw.meta && typeof raw.meta==="object") ? raw.meta : {createdAt: nowISO(), lastModified: nowISO()};
+    return {version:1, settings, goals, contributions, sinkingFunds:funds, milestones, meta};
+  }catch(e){ return null; }
+}
+
+function createSampleData(){
+  const settings = defaultSettings();
+  const goals = [], contributions = [], sinkingFunds = [], milestones = [];
+  const today = new Date();
+
+  function mkGoal(name, icon, color, target, daysUntil, status, note){
+    const id = uid("g");
+    goals.push({ id, name, icon, color, target: round2(target), targetDate: daysUntil!=null? toDateStr(addDays(today, daysUntil)) : "", status, note: note||"", createdAt: toDateStr(addDays(today,-70))+"T09:00:00.000Z", updatedAt: nowISO() });
+    return id;
+  }
+  function mkContrib(targetType, targetId, amount, daysAgo, note){
+    contributions.push({ id: uid("c"), targetType, targetId, amount: round2(amount), date: toDateStr(addDays(today,-daysAgo)), note: note||"", createdAt: nowISO() });
+  }
+  function mkFund(name, icon, color, target, status, note){
+    const id = uid("f");
+    sinkingFunds.push({ id, name, icon, color, target: round2(target), deadline:"", status, note: note||"", createdAt: toDateStr(addDays(today,-60))+"T09:00:00.000Z", updatedAt: nowISO() });
+    return id;
+  }
+
+  const emergencyId = mkGoal("Emergency Fund","shield","blue",5000,120,"active","3-6 months of essential expenses, just in case.");
+  mkContrib("goal", emergencyId, 600, 85);
+  mkContrib("goal", emergencyId, 500, 68);
+  mkContrib("goal", emergencyId, 450, 50);
+  mkContrib("goal", emergencyId, 400, 34);
+  mkContrib("goal", emergencyId, 250, 20);
+  mkContrib("goal", emergencyId, 200, 6);
+  milestones.push({id:uid("m"), goalId: emergencyId, type:"amount", value:4000, label:"Fully funded buffer", note:"Treat yourself to a nice dinner!", createdAt: nowISO()});
+
+  const laptopId = mkGoal("New Laptop","laptop","purple",1200,40,"active","For freelance design work.");
+  mkContrib("goal", laptopId, 200, 55);
+  mkContrib("goal", laptopId, 180, 40);
+  mkContrib("goal", laptopId, 150, 25);
+  mkContrib("goal", laptopId, 130, 12);
+  mkContrib("goal", laptopId, 120, 3);
+
+  const vacationId = mkGoal("Vacation Fund","plane","teal",1000,150,"active","A relaxing week away next summer.");
+  mkContrib("goal", vacationId, 120, 45);
+  mkContrib("goal", vacationId, 100, 30);
+  mkContrib("goal", vacationId, 80, 15);
+  mkContrib("goal", vacationId, 50, 4);
+
+  const carId = mkGoal("New Car","car","orange",15000,300,"paused","Paused while focusing on the emergency fund.");
+  mkContrib("goal", carId, 1500, 90);
+  mkContrib("goal", carId, 1000, 60);
+
+  const gamingId = mkGoal("Gaming PC","gamepad","pink",900,null,"completed","Finally upgraded!");
+  mkContrib("goal", gamingId, 500, 100);
+  mkContrib("goal", gamingId, 400, 60);
+
+  const xmasId = mkFund("Christmas","gift","red",600,"active","Gifts and decorations.");
+  mkContrib("fund", xmasId, 120, 80);
+  mkContrib("fund", xmasId, 80, 50);
+  mkContrib("fund", xmasId, 40, 15);
+
+  const carRepairId = mkFund("Car Repairs","car","orange",500,"active","");
+  mkContrib("fund", carRepairId, 100, 70);
+  mkContrib("fund", carRepairId, 80, 20);
+
+  const bdayId = mkFund("Birthdays","gift","pink",300,"active","");
+  mkContrib("fund", bdayId, 60, 40);
+  mkContrib("fund", bdayId, 35, 10);
+
+  const insId = mkFund("Insurance","shield","teal",800,"active","Annual premium top-up.");
+  mkContrib("fund", insId, 200, 55);
+  mkContrib("fund", insId, 120, 20);
+
+  return {
+    version:1, settings, goals, contributions, sinkingFunds, milestones,
+    meta:{ createdAt: nowISO(), lastModified: nowISO(), sampleDataLoaded:true }
+  };
+}
+
+function createEmptyData(){
+  return {
+    version:1, settings: defaultSettings(), goals: [], contributions: [], sinkingFunds: [], milestones: [],
+    meta:{ createdAt: nowISO(), lastModified: nowISO(), sampleDataLoaded:false }
+  };
+}
+
+function loadData(){
+  if(DEMO_MODE){
+    try{
+      const seededAt = parseInt(localStorage.getItem(DEMO_SEED_KEY), 10);
+      const isFresh = !isNaN(seededAt) && (Date.now() - seededAt) < DEMO_RESET_MS;
+      if(isFresh){
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const valid = validateData(raw);
+        if(valid) return valid;
+      }
+    }catch(e){ /* fall through to reseed */ }
+    // No data yet, or the 15-minute demo window has elapsed: start fresh.
+    const sample = createSampleData();
+    try{ localStorage.setItem(DEMO_SEED_KEY, String(Date.now())); }catch(e){}
+    return sample;
+  }
+  try{
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const valid = validateData(raw);
+    if(valid) return valid;
+  }catch(e){ /* fall through */ }
+  return createEmptyData();
+}
+function saveData(){
+  App.data.meta.lastModified = nowISO();
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(App.data)); }catch(e){ console.warn("Save failed", e); }
+}
+
+/* ---- Demo auto-reset ---- */
+function resetDemoData(){
+  try{ localStorage.setItem(DEMO_SEED_KEY, String(Date.now())); }catch(e){}
+  App.data = createSampleData();
+  saveData();
+  applyTheme();
+  applyDensity();
+  App.state.openMenuId = null;
+  closeModal();
+  renderNav();
+  renderPage(App.state.page);
+  showToast("Demo data has been refreshed.", "info");
+}
+function demoSeedTimestamp(){
+  const t = parseInt(localStorage.getItem(DEMO_SEED_KEY), 10);
+  return isNaN(t) ? Date.now() : t;
+}
+function scheduleDemoReset(){
+  if(!DEMO_MODE) return;
+  if(demoResetTimer) clearTimeout(demoResetTimer);
+  const msLeft = Math.max(1000, DEMO_RESET_MS - (Date.now() - demoSeedTimestamp()));
+  demoResetTimer = setTimeout(function(){
+    resetDemoData();
+    scheduleDemoReset();
+  }, msLeft);
+  updateDemoCountdownLabel();
+  if(demoCountdownTimer) clearInterval(demoCountdownTimer);
+  demoCountdownTimer = setInterval(updateDemoCountdownLabel, 15000);
+}
+function updateDemoCountdownLabel(){
+  const el = document.getElementById("demoResetNote");
+  if(!el) return;
+  const msLeft = Math.max(0, DEMO_RESET_MS - (Date.now() - demoSeedTimestamp()));
+  const mins = Math.floor(msLeft/60000);
+  const secs = Math.floor((msLeft%60000)/1000);
+  el.textContent = "Demo data resets in " + mins + ":" + (secs<10?"0":"") + secs;
+}
+
+/* =========================================================================
+   CALCULATIONS (single source of truth)
+========================================================================= */
+function goalContributions(goalId){
+  return App.data.contributions.filter(c=>c.targetType==="goal" && c.targetId===goalId).sort((a,b)=> a.date.localeCompare(b.date));
+}
+function fundContributions(fundId){
+  return App.data.contributions.filter(c=>c.targetType==="fund" && c.targetId===fundId).sort((a,b)=> a.date.localeCompare(b.date));
+}
+function goalSaved(goalId){ return round2(goalContributions(goalId).reduce((s,c)=>s+c.amount,0)); }
+function fundSaved(fundId){ return round2(fundContributions(fundId).reduce((s,c)=>s+c.amount,0)); }
+function goalProgress(goal){ if(goal.target<=0) return 0; return clamp((goalSaved(goal.id)/goal.target)*100,0,100); }
+function fundProgress(fund){ if(fund.target<=0) return 0; return clamp((fundSaved(fund.id)/fund.target)*100,0,100); }
+function goalRemaining(goal){ return Math.max(0, round2(goal.target - goalSaved(goal.id))); }
+function fundRemaining(fund){ return Math.max(0, round2(fund.target - fundSaved(fund.id))); }
+
+function recalcGoalStatus(goal){
+  const saved = goalSaved(goal.id);
+  if(saved >= goal.target - 0.001){
+    if(goal.status !== "completed"){ goal.status = "completed"; goal.updatedAt = nowISO(); return "completed"; }
+  } else if(goal.status === "completed"){
+    goal.status = "active"; goal.updatedAt = nowISO();
+  }
+  return null;
+}
+function recalcFundStatus(fund){
+  const saved = fundSaved(fund.id);
+  if(saved >= fund.target - 0.001){
+    if(fund.status !== "completed"){ fund.status = "completed"; fund.updatedAt = nowISO(); return "completed"; }
+  } else if(fund.status === "completed"){
+    fund.status = "active"; fund.updatedAt = nowISO();
+  }
+  return null;
+}
+
+function getDefaultMilestones(goal){
+  const saved = goalSaved(goal.id);
+  return [25,50,75,100].map(pct=>{
+    const amount = round2(goal.target*pct/100);
+    return { id:"default-"+pct, goalId: goal.id, isDefault:true, percent:pct, amount, label: pct+"%", reached: saved >= amount - 0.005 };
+  });
+}
+function getCustomMilestones(goal){
+  const saved = goalSaved(goal.id);
+  return App.data.milestones.filter(m=>m.goalId===goal.id).map(m=>{
+    const amount = m.type==="percent" ? round2(goal.target*m.value/100) : m.value;
+    return Object.assign({}, m, { amount, reached: saved >= amount - 0.005 });
+  });
+}
+function getAllMilestones(goal){
+  return getDefaultMilestones(goal).concat(getCustomMilestones(goal)).sort((a,b)=>a.amount-b.amount);
+}
+function getNextMilestone(goal){ return getAllMilestones(goal).find(m=>!m.reached) || null; }
+function countReachedMilestones(goal){ return getAllMilestones(goal).filter(m=>m.reached).length; }
+
+function getActiveGoals(){ return App.data.goals.filter(g=>g.status==="active"); }
+function getTotalSaved(){ return round2(App.data.goals.reduce((s,g)=>s+goalSaved(g.id),0)); }
+function getActiveGoalsCount(){ return getActiveGoals().length; }
+function getCompletedGoalsCount(){ return App.data.goals.filter(g=>g.status==="completed").length; }
+function getThisMonthTotal(){
+  const now = new Date();
+  return round2(App.data.contributions.filter(c=>c.targetType==="goal").filter(c=>{
+    const d = parseLocalDate(c.date);
+    return d && d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  }).reduce((s,c)=>s+c.amount,0));
+}
+function getTotalRemaining(){ return round2(getActiveGoals().reduce((s,g)=>s+goalRemaining(g),0)); }
+
+/* =========================================================================
+   TOASTS
+========================================================================= */
+function showToast(message, type){
+  const container = document.getElementById("toastContainer");
+  const el = document.createElement("div");
+  el.className = "toast" + (type==="error" ? " error" : "");
+  el.setAttribute("role","status");
+  el.innerHTML = icon(type==="error" ? "close" : "check") + "<span>"+escapeHtml(message)+"</span>";
+  container.appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; el.style.transition="all .25s ease"; setTimeout(()=>el.remove(),260); }, 3200);
+}
+
+/* =========================================================================
+   MODAL SYSTEM
+========================================================================= */
+const modalRoot = document.getElementById("modalRoot");
+function openModal(html, kind){
+  modalRoot.innerHTML = html;
+  modalRoot.classList.add("open");
+  App.state.modalKind = kind || null;
+  document.body.style.overflow = "hidden";
+  const firstInput = modalRoot.querySelector("input, select, textarea, button");
+  if(firstInput) setTimeout(()=>firstInput.focus(),30);
+}
+function closeModal(){
+  modalRoot.classList.remove("open");
+  modalRoot.innerHTML = "";
+  App.state.modalKind = null;
+  App.state.confirmCallback = null;
+  document.body.style.overflow = "";
+}
+function refreshOpenModal(){
+  const kind = App.state.modalKind;
+  if(!kind) return;
+  const [type, id] = kind.split(":");
+  if(type==="goal-detail"){
+    const g = App.data.goals.find(x=>x.id===id);
+    if(g) modalRoot.innerHTML = detailModalHTML(g,"goal"); else closeModal();
+  } else if(type==="fund-detail"){
+    const f = App.data.sinkingFunds.find(x=>x.id===id);
+    if(f) modalRoot.innerHTML = detailModalHTML(f,"fund"); else closeModal();
+  }
+}
+function confirmDialog(opts){
+  App.state.confirmCallback = opts.onConfirm;
+  openModal(
+    '<div class="modal" role="dialog" aria-modal="true">'+
+      '<div class="confirm-icon'+(opts.danger?'':' neutral')+'">'+icon(opts.danger?"trash":"info")+'</div>'+
+      '<h2 style="font-size:1.1rem;font-weight:800;margin-bottom:.5rem;">'+escapeHtml(opts.title)+'</h2>'+
+      '<p class="text-secondary" style="font-size:.9rem;line-height:1.5;">'+escapeHtml(opts.message)+'</p>'+
+      '<div class="modal-actions">'+
+        '<button class="btn btn-secondary" data-action="close-modal">Cancel</button>'+
+        '<button class="btn '+(opts.danger?'btn-danger':'btn-primary')+'" data-action="confirm-yes">'+escapeHtml(opts.confirmText||"Confirm")+'</button>'+
+      '</div>'+
+    '</div>', "confirm"
+  );
+}
+
+/* =========================================================================
+   SVG / ICON / COLOR PICKERS (shared form fragments)
+========================================================================= */
+function iconPickerHTML(selected, inputId){
+  return '<input type="hidden" id="'+inputId+'" value="'+selected+'">'+
+    '<div class="icon-picker" role="group" aria-label="Choose icon">'+
+    ICON_PICKS.map(k=>'<button type="button" class="pick-btn'+(k===selected?' selected':'')+'" data-pick-icon="'+k+'" data-target="'+inputId+'" aria-label="'+k+' icon" aria-pressed="'+(k===selected)+'">'+icon(k)+'</button>').join("")+
+    '</div>';
+}
+function colorPickerHTML(selected, inputId){
+  return '<input type="hidden" id="'+inputId+'" value="'+selected+'">'+
+    '<div class="color-picker" role="group" aria-label="Choose color">'+
+    COLORS.map(c=>'<button type="button" class="swatch'+(c.key===selected?' selected':'')+'" data-pick-color="'+c.key+'" data-target="'+inputId+'" style="background:var('+c.var+')" aria-label="'+c.key+' color" aria-pressed="'+(c.key===selected)+'"></button>').join("")+
+    '</div>';
+}
+
+/* =========================================================================
+   RENDER: SIDEBAR NAV
+========================================================================= */
+function renderNav(){
+  const navList = document.getElementById("navList");
+  navList.innerHTML = NAV_ITEMS.map(item=>
+    '<button class="nav-item'+(App.state.page===item.page?' active':'')+'" data-action="nav" data-page="'+item.page+'" aria-current="'+(App.state.page===item.page?'page':'false')+'">'+
+    icon(item.i)+'<span>'+item.label+'</span></button>'
+  ).join("");
+}
+
+/* =========================================================================
+   RENDER: GOAL / FUND CARD FRAGMENTS
+========================================================================= */
+function statusPill(status){
+  if(status==="active") return '<span class="pill pill-active">Active</span>';
+  if(status==="paused") return '<span class="pill pill-paused">Paused</span>';
+  return '<span class="pill pill-completed">'+icon("check")+' Completed</span>';
+}
+
+function goalCardHTML(g){
+  const saved = goalSaved(g.id), pct = Math.round(goalProgress(g)), remaining = goalRemaining(g);
+  const nextM = getNextMilestone(g);
+  const hex = "var(--"+g.color+")", soft = "var(--"+g.color+"-soft)";
+  return '<div class="card goal-card is-'+g.status+'" data-goal-id="'+g.id+'">'+
+    '<div class="goal-card-top">'+
+      '<div class="icon-badge" style="background:'+soft+';color:'+hex+';">'+icon(g.icon)+'</div>'+
+      '<div style="display:flex;align-items:center;gap:.5rem;">'+statusPill(g.status)+
+      '<div class="card-menu">'+
+        '<button class="icon-btn" data-action="toggle-menu" data-id="'+g.id+'" aria-haspopup="true" aria-label="Goal options">'+icon("more")+'</button>'+
+        '<div class="menu-dropdown hidden" data-menu-id="'+g.id+'">'+
+          (g.status!=="completed" ? '<button data-action="open-contribution-modal" data-type="goal" data-id="'+g.id+'">'+icon("plus")+' Add Money</button>':'')+
+          '<button data-action="open-goal-detail" data-id="'+g.id+'">'+icon("arrowRight")+' View Details</button>'+
+          '<button data-action="open-goal-modal" data-id="'+g.id+'">'+icon("edit")+' Edit</button>'+
+          (g.status!=="completed" ? '<button data-action="toggle-pause-goal" data-id="'+g.id+'">'+icon(g.status==="paused"?"play":"pause")+' '+(g.status==="paused"?"Resume":"Pause")+'</button>':'')+
+          (g.status!=="completed" ? '<button data-action="complete-goal" data-id="'+g.id+'">'+icon("check")+' Mark Completed</button>':'')+
+          '<button class="danger" data-action="delete-goal" data-id="'+g.id+'">'+icon("trash")+' Delete</button>'+
+        '</div>'+
+      '</div></div>'+
+    '</div>'+
+    '<div class="goal-card-body" role="button" tabindex="0" data-action="open-goal-detail" data-id="'+g.id+'">'+
+      '<div class="goal-name truncate">'+escapeHtml(g.name)+'</div>'+
+      '<div class="goal-amounts"><b>'+formatMoney(saved)+'</b> / '+formatMoney(g.target)+'</div>'+
+      '<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:'+(g.status==="completed"?"var(--green)":hex)+';"></div></div>'+
+      '<div class="goal-meta-row"><span>'+pct+'%</span><span>'+(g.status==="completed" ? "Goal completed!" : formatMoney(remaining)+" remaining")+'</span></div>'+
+      (g.status==="completed" ? '<div class="milestone-chip done">'+icon("check")+' All done</div>' : (nextM ? '<div class="milestone-chip">'+icon("star")+' Next milestone: '+formatMoney(nextM.amount)+'</div>' : ''))+
+    '</div>'+
+    (g.status!=="completed" ? '<div class="goal-card-actions"><button class="btn btn-primary btn-sm btn-block" data-action="open-contribution-modal" data-type="goal" data-id="'+g.id+'">'+icon("plus")+' Add Money</button></div>' : '')+
+  '</div>';
+}
+
+function fundCardHTML(f){
+  const saved = fundSaved(f.id), pct = Math.round(fundProgress(f)), remaining = fundRemaining(f);
+  const hex = "var(--"+f.color+")", soft = "var(--"+f.color+"-soft)";
+  return '<div class="card goal-card is-'+f.status+'" data-fund-id="'+f.id+'">'+
+    '<div class="goal-card-top">'+
+      '<div class="icon-badge" style="background:'+soft+';color:'+hex+';">'+icon(f.icon)+'</div>'+
+      '<div style="display:flex;align-items:center;gap:.5rem;">'+statusPill(f.status)+
+      '<div class="card-menu">'+
+        '<button class="icon-btn" data-action="toggle-menu" data-id="'+f.id+'" aria-haspopup="true" aria-label="Fund options">'+icon("more")+'</button>'+
+        '<div class="menu-dropdown hidden" data-menu-id="'+f.id+'">'+
+          (f.status!=="completed" ? '<button data-action="open-contribution-modal" data-type="fund" data-id="'+f.id+'">'+icon("plus")+' Add Money</button>':'')+
+          '<button data-action="open-fund-detail" data-id="'+f.id+'">'+icon("arrowRight")+' View Details</button>'+
+          '<button data-action="open-fund-modal" data-id="'+f.id+'">'+icon("edit")+' Edit</button>'+
+          (f.status!=="completed" ? '<button data-action="toggle-pause-fund" data-id="'+f.id+'">'+icon(f.status==="paused"?"play":"pause")+' '+(f.status==="paused"?"Resume":"Pause")+'</button>':'')+
+          (f.status!=="completed" ? '<button data-action="complete-fund" data-id="'+f.id+'">'+icon("check")+' Mark Completed</button>':'')+
+          '<button class="danger" data-action="delete-fund" data-id="'+f.id+'">'+icon("trash")+' Delete</button>'+
+        '</div>'+
+      '</div></div>'+
+    '</div>'+
+    '<div class="goal-card-body" role="button" tabindex="0" data-action="open-fund-detail" data-id="'+f.id+'">'+
+      '<div class="goal-name truncate">'+escapeHtml(f.name)+'</div>'+
+      '<div class="goal-amounts"><b>'+formatMoney(saved)+'</b> / '+formatMoney(f.target)+'</div>'+
+      '<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:'+(f.status==="completed"?"var(--green)":hex)+';"></div></div>'+
+      '<div class="goal-meta-row"><span>'+pct+'%</span><span>'+(f.status==="completed"?"Fully funded!":formatMoney(remaining)+" remaining")+'</span></div>'+
+      (f.deadline ? '<div class="text-faint" style="font-size:.76rem;">'+deadlineText(f.deadline,f.status)+'</div>' : '')+
+    '</div>'+
+    (f.status!=="completed" ? '<div class="goal-card-actions"><button class="btn btn-primary btn-sm btn-block" data-action="open-contribution-modal" data-type="fund" data-id="'+f.id+'">'+icon("plus")+' Add Money</button></div>' : '')+
+  '</div>';
+}
+
+/* =========================================================================
+   RENDER: HOME / DASHBOARD
+========================================================================= */
+function renderHome(){
+  const el = document.getElementById("page-home");
+  const settings = App.data.settings;
+  const now = new Date();
+  const hour = (now.getHours() - (settings.dayStartOffset||0) + 24) % 24;
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+  const totalSaved = getTotalSaved(), activeCount = getActiveGoalsCount(), thisMonth = getThisMonthTotal(), remaining = getTotalRemaining();
+
+  const sortedGoals = [...App.data.goals].sort((a,b)=>{
+    const rank = s=> s==="active"?0:s==="paused"?1:2;
+    if(rank(a.status)!==rank(b.status)) return rank(a.status)-rank(b.status);
+    return (b.updatedAt||"").localeCompare(a.updatedAt||"");
+  }).slice(0,3);
+
+  const sortedFunds = [...App.data.sinkingFunds].sort((a,b)=>{
+    const rank = s=> s==="active"?0:s==="paused"?1:2;
+    if(rank(a.status)!==rank(b.status)) return rank(a.status)-rank(b.status);
+    return (b.updatedAt||"").localeCompare(a.updatedAt||"");
+  }).slice(0,4);
+
+  let featuredGoal = getActiveGoals()[0] || App.data.goals[0];
+
+  el.innerHTML =
+  '<div class="page-header">'+
+    '<div>'+
+      '<div class="greeting-eyebrow">'+greeting+',</div>'+
+      '<div class="greeting-name">Hi, '+escapeHtml(settings.displayName)+'! 👋 <button class="edit-name-btn" data-action="edit-name" aria-label="Edit display name">'+icon("edit")+'</button></div>'+
+      '<div class="greeting-tagline">'+(settings.motivationalMessages ? "Let's make progress on your savings goals." : "Here is your savings overview.")+'</div>'+
+    '</div>'+
+  '</div>'+
+
+  '<div class="quick-actions">'+
+    '<button class="btn btn-primary" data-action="open-goal-modal">'+icon("plus")+' Add Goal</button>'+
+    '<button class="btn btn-secondary" data-action="open-contribution-modal">'+icon("plus")+' Add Money</button>'+
+    '<button class="btn btn-secondary" data-action="open-fund-modal">'+icon("plus")+' Add Sinking Fund</button>'+
+    '<button class="btn btn-secondary" data-action="open-milestone-modal">'+icon("plus")+' Add Milestone</button>'+
+  '</div>'+
+
+  '<div class="grid grid-4">'+
+    statCard("piggy","Total Saved", formatMoney(totalSaved), "green")+
+    statCard("target","Active Goals", String(activeCount), "blue")+
+    statCard("calendar","This Month", formatMoney(thisMonth), "gold")+
+    statCard("wallet","Remaining", formatMoney(remaining), "purple")+
+  '</div>'+
+
+  '<div class="dash-columns">'+
+    '<div class="stack">'+
+      '<div>'+
+        '<div class="section-title-row">'+
+          '<div class="section-title">'+icon("target")+' Savings Goals</div>'+
+          '<button class="view-all" data-action="nav" data-page="goals">View all '+icon("arrowRight")+'</button>'+
+        '</div>'+
+        (sortedGoals.length ? '<div class="grid grid-3">'+sortedGoals.map(goalCardHTML).join("")+'</div>' :
+          emptyStateHTML("target","No savings goals yet.","Start with one small goal. You can build from there.","Create your first goal","open-goal-modal"))+
+      '</div>'+
+      '<div class="card">'+
+        '<div class="section-title-row">'+
+          '<div class="section-title">'+icon("star")+' Your Milestones</div>'+
+          '<button class="view-all" data-action="nav" data-page="milestones">View all '+icon("arrowRight")+'</button>'+
+        '</div>'+
+        (featuredGoal ? milestoneStepperHTML(featuredGoal) : '<p class="text-secondary" style="font-size:.88rem;">Create a goal to start tracking milestones.</p>')+
+      '</div>'+
+    '</div>'+
+
+    '<div class="stack">'+
+      '<div class="card">'+
+        '<div class="section-title-row">'+
+          '<div class="section-title">'+icon("wallet")+' Sinking Funds</div>'+
+          '<button class="view-all" data-action="nav" data-page="funds">View all '+icon("arrowRight")+'</button>'+
+        '</div>'+
+        (sortedFunds.length ? sortedFunds.map(fundRowHTML).join("") : emptyStateHTML("wallet","Plan your future expenses.","Create a sinking fund for costs you know are coming.","Create sinking fund","open-fund-modal")) +
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function statCard(iconName,label,value,color){
+  return '<div class="card stat-card">'+
+    '<div><div class="stat-label">'+label+'</div><div class="stat-value">'+value+'</div></div>'+
+    '<div class="stat-card-icon" style="background:var(--'+color+'-soft);color:var(--'+color+');">'+icon(iconName)+'</div>'+
+  '</div>';
+}
+
+function fundRowHTML(f){
+  const saved = fundSaved(f.id), pct = Math.round(fundProgress(f));
+  return '<div class="fund-row" data-action="open-fund-detail" data-id="'+f.id+'" role="button" tabindex="0" style="cursor:pointer;">'+
+    '<div class="fund-row-icon" style="background:var(--'+f.color+'-soft);color:var(--'+f.color+');">'+icon(f.icon)+'</div>'+
+    '<div class="fund-row-body">'+
+      '<div class="fund-row-top"><span class="truncate">'+escapeHtml(f.name)+'</span><span>'+formatMoney(saved)+' / '+formatMoney(f.target)+'</span></div>'+
+      '<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:var(--'+(f.status==="completed"?"green":f.color)+');"></div></div>'+
+    '</div>'+
+  '</div>';
+}
+
+function emptyStateHTML(iconName,title,desc,btnLabel,action){
+  return '<div class="card empty-state">'+
+    '<div class="icon-badge">'+icon(iconName)+'</div>'+
+    '<h3>'+escapeHtml(title)+'</h3><p>'+escapeHtml(desc)+'</p>'+
+    '<button class="btn btn-primary" data-action="'+action+'">'+icon("plus")+' '+escapeHtml(btnLabel)+'</button>'+
+  '</div>';
+}
+
+function milestoneStepperHTML(goal){
+  const all = getDefaultMilestones(goal);
+  const next = getNextMilestone(goal);
+  return '<div class="stepper">'+all.map(m=>{
+    const isNext = next && !m.reached && next.amount===m.amount && next.isDefault;
+    return '<div class="step'+(m.reached?' reached':'')+(isNext?' next':'')+'">'+
+      '<div class="step-dot">'+(m.reached?icon("check"):m.percent+"%")+'</div>'+
+      '<div class="step-label">'+m.percent+'%</div>'+
+      '<div class="step-amount">'+formatMoney(m.amount)+'</div>'+
+      '<div class="step-status">'+(m.reached?"✓ Reached":(isNext?"Next":(m.percent===100?"Final goal":"")))+'</div>'+
+    '</div>';
+  }).join("")+'</div>';
+}
+
+/* =========================================================================
+   RENDER: GOALS PAGE
+========================================================================= */
+function filteredSortedGoals(){
+  const f = App.state.goalsFilter;
+  let list = App.data.goals.filter(g=>{
+    if(f.status!=="all" && g.status!==f.status) return false;
+    if(f.search && !g.name.toLowerCase().includes(f.search.toLowerCase())) return false;
+    return true;
+  });
+  list.sort((a,b)=>{
+    if(f.sort==="progress") return goalProgress(b)-goalProgress(a);
+    if(f.sort==="date") return (a.targetDate||"9999").localeCompare(b.targetDate||"9999");
+    if(f.sort==="name") return a.name.localeCompare(b.name);
+    return (b.updatedAt||"").localeCompare(a.updatedAt||"");
+  });
+  return list;
+}
+function renderGoalsList(){
+  const container = document.getElementById("goals-list");
+  if(!container) return;
+  const list = filteredSortedGoals();
+  if(list.length===0){
+    container.innerHTML = App.data.goals.length===0
+      ? emptyStateHTML("target","No savings goals yet.","Start with one small goal. You can build from there.","Create your first goal","open-goal-modal")
+      : '<div class="card empty-state"><div class="icon-badge">'+icon("search")+'</div><h3>No matching goals</h3><p>Try a different search or filter.</p></div>';
+  } else {
+    container.innerHTML = '<div class="grid grid-3">'+list.map(goalCardHTML).join("")+'</div>';
+  }
+}
+function renderGoalsPage(){
+  const el = document.getElementById("page-goals");
+  const f = App.state.goalsFilter;
+  el.innerHTML =
+  '<div class="page-header"><div><h1>Savings Goals</h1><p>Create, track, and celebrate progress on every goal.</p></div>'+
+    '<button class="btn btn-primary" data-action="open-goal-modal">'+icon("plus")+' Add Goal</button></div>'+
+  '<div class="filter-bar">'+
+    '<div class="search-box">'+icon("search")+'<input class="input" id="goals-search" placeholder="Search goals..." value="'+escapeHtml(f.search)+'" aria-label="Search goals"></div>'+
+    '<div class="tabs" id="goals-tabs" role="tablist" aria-label="Filter by status">'+
+      ["all","active","paused","completed"].map(s=>'<button class="tab-btn'+(f.status===s?' active':'')+'" data-status="'+s+'">'+s.charAt(0).toUpperCase()+s.slice(1)+'</button>').join("")+
+    '</div>'+
+    '<select class="input sort-select" id="goals-sort" aria-label="Sort goals">'+
+      '<option value="updated"'+(f.sort==="updated"?" selected":"")+'>Recently updated</option>'+
+      '<option value="progress"'+(f.sort==="progress"?" selected":"")+'>Closest to completion</option>'+
+      '<option value="date"'+(f.sort==="date"?" selected":"")+'>Target date</option>'+
+      '<option value="name"'+(f.sort==="name"?" selected":"")+'>Name</option>'+
+    '</select>'+
+  '</div>'+
+  '<div id="goals-list"></div>';
+
+  renderGoalsList();
+  const search = document.getElementById("goals-search");
+  search.addEventListener("input", ()=>{ App.state.goalsFilter.search = search.value; renderGoalsList(); });
+  document.getElementById("goals-sort").addEventListener("change", (e)=>{ App.state.goalsFilter.sort = e.target.value; renderGoalsList(); });
+  document.getElementById("goals-tabs").querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      App.state.goalsFilter.status = btn.dataset.status;
+      document.getElementById("goals-tabs").querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderGoalsList();
+    });
+  });
+}
+
+/* =========================================================================
+   RENDER: FUNDS PAGE
+========================================================================= */
+function filteredSortedFunds(){
+  const f = App.state.fundsFilter;
+  let list = App.data.sinkingFunds.filter(x=>{
+    if(f.status!=="all" && x.status!==f.status) return false;
+    if(f.search && !x.name.toLowerCase().includes(f.search.toLowerCase())) return false;
+    return true;
+  });
+  list.sort((a,b)=>{
+    if(f.sort==="progress") return fundProgress(b)-fundProgress(a);
+    if(f.sort==="date") return (a.deadline||"9999").localeCompare(b.deadline||"9999");
+    if(f.sort==="name") return a.name.localeCompare(b.name);
+    return (b.updatedAt||"").localeCompare(a.updatedAt||"");
+  });
+  return list;
+}
+function renderFundsList(){
+  const container = document.getElementById("funds-list");
+  if(!container) return;
+  const list = filteredSortedFunds();
+  if(list.length===0){
+    container.innerHTML = App.data.sinkingFunds.length===0
+      ? emptyStateHTML("wallet","Plan your future expenses.","Sinking funds help you save gradually for things you know are coming.","Create sinking fund","open-fund-modal")
+      : '<div class="card empty-state"><div class="icon-badge">'+icon("search")+'</div><h3>No matching funds</h3><p>Try a different search or filter.</p></div>';
+  } else {
+    container.innerHTML = '<div class="grid grid-3">'+list.map(fundCardHTML).join("")+'</div>';
+  }
+}
+function renderFundsPage(){
+  const el = document.getElementById("page-funds");
+  const f = App.state.fundsFilter;
+  el.innerHTML =
+  '<div class="page-header"><div><h1>Sinking Funds</h1><p>Set money aside gradually for planned future expenses.</p></div>'+
+    '<button class="btn btn-primary" data-action="open-fund-modal">'+icon("plus")+' Add Sinking Fund</button></div>'+
+  '<div class="filter-bar">'+
+    '<div class="search-box">'+icon("search")+'<input class="input" id="funds-search" placeholder="Search funds..." value="'+escapeHtml(f.search)+'" aria-label="Search funds"></div>'+
+    '<div class="tabs" id="funds-tabs" role="tablist" aria-label="Filter by status">'+
+      ["all","active","paused","completed"].map(s=>'<button class="tab-btn'+(f.status===s?' active':'')+'" data-status="'+s+'">'+s.charAt(0).toUpperCase()+s.slice(1)+'</button>').join("")+
+    '</div>'+
+    '<select class="input sort-select" id="funds-sort" aria-label="Sort funds">'+
+      '<option value="updated"'+(f.sort==="updated"?" selected":"")+'>Recently updated</option>'+
+      '<option value="progress"'+(f.sort==="progress"?" selected":"")+'>Closest to completion</option>'+
+      '<option value="date"'+(f.sort==="date"?" selected":"")+'>Deadline</option>'+
+      '<option value="name"'+(f.sort==="name"?" selected":"")+'>Name</option>'+
+    '</select>'+
+  '</div>'+
+  '<div id="funds-list"></div>';
+
+  renderFundsList();
+  const search = document.getElementById("funds-search");
+  search.addEventListener("input", ()=>{ App.state.fundsFilter.search = search.value; renderFundsList(); });
+  document.getElementById("funds-sort").addEventListener("change", (e)=>{ App.state.fundsFilter.sort = e.target.value; renderFundsList(); });
+  document.getElementById("funds-tabs").querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      App.state.fundsFilter.status = btn.dataset.status;
+      document.getElementById("funds-tabs").querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderFundsList();
+    });
+  });
+}
+
+/* =========================================================================
+   RENDER: MILESTONES PAGE
+========================================================================= */
+function renderMilestonesPage(){
+  const el = document.getElementById("page-milestones");
+  const goals = App.data.goals;
+  el.innerHTML =
+  '<div class="page-header"><div><h1>Milestones</h1><p>Checkpoints that keep every goal feeling achievable.</p></div>'+
+    '<button class="btn btn-primary" data-action="open-milestone-modal">'+icon("plus")+' Add Milestone</button></div>'+
+  (goals.length===0 ? emptyStateHTML("star","No goals yet.","Create a goal first, then add milestones to celebrate progress.","Create your first goal","open-goal-modal") :
+    goals.map(g=>{
+      const custom = getCustomMilestones(g);
+      return '<div class="card" style="margin-bottom:1.1rem;">'+
+        '<div class="section-title-row">'+
+          '<div class="section-title"><div class="icon-badge" style="width:34px;height:34px;background:var(--'+g.color+'-soft);color:var(--'+g.color+');margin-right:.3rem;">'+icon(g.icon)+'</div>'+escapeHtml(g.name)+' '+statusPill(g.status)+'</div>'+
+          '<span class="text-secondary" style="font-size:.85rem;font-weight:700;">'+formatMoney(goalSaved(g.id))+' / '+formatMoney(g.target)+'</span>'+
+        '</div>'+
+        milestoneStepperHTML(g)+
+        (custom.length ? '<div class="detail-section-title">Custom checkpoints</div>'+custom.map(m=>
+          '<div class="contrib-row"><div class="contrib-info"><div style="font-weight:700;font-size:.86rem;">'+escapeHtml(m.label)+' — '+formatMoney(m.amount)+'</div>'+
+          (m.note?'<div class="contrib-note wrap-anywhere">'+escapeHtml(m.note)+'</div>':'')+'</div>'+
+          '<div style="display:flex;align-items:center;gap:.5rem;">'+(m.reached?'<span class="pill pill-completed">'+icon("check")+' Reached</span>':'<span class="pill pill-paused">Upcoming</span>')+
+          '<button class="contrib-del" data-action="delete-milestone" data-id="'+m.id+'" aria-label="Delete milestone">'+icon("trash")+'</button></div></div>'
+        ).join("") : "")+
+        '<button class="btn btn-secondary btn-sm mt-2" data-action="open-milestone-modal" data-goal-id="'+g.id+'">'+icon("plus")+' Add custom milestone</button>'+
+      '</div>';
+    }).join(""));
+}
+
+/* =========================================================================
+   RENDER: ANALYTICS PAGE
+========================================================================= */
+function getMonthsRange(n){
+  const arr = []; const now = new Date();
+  for(let i=n-1;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    arr.push({ year:d.getFullYear(), month:d.getMonth(), label: d.toLocaleString(undefined,{month:"short"}) });
+  }
+  return arr;
+}
+function monthlyContributionTotals(n){
+  const months = getMonthsRange(n);
+  const totals = months.map(()=>0);
+  App.data.contributions.forEach(c=>{
+    const d = parseLocalDate(c.date);
+    if(!d) return;
+    months.forEach((m,i)=>{ if(d.getFullYear()===m.year && d.getMonth()===m.month) totals[i]+=c.amount; });
+  });
+  return months.map((m,i)=>({label:m.label, value: round2(totals[i])}));
+}
+function cumulativeSavingsSeries(n){
+  const months = getMonthsRange(n);
+  const rangeStart = new Date(months[0].year, months[0].month, 1);
+  let base = 0;
+  App.data.contributions.forEach(c=>{ const d = parseLocalDate(c.date); if(d && d<rangeStart) base += c.amount; });
+  const monthly = monthlyContributionTotals(n);
+  let running = base;
+  return monthly.map(m=>{ running += m.value; return { label:m.label, value: round2(running) }; });
+}
+function buildLineChart(series){
+  const w=640,h=220,pad=34;
+  const max = Math.max(...series.map(s=>s.value),1);
+  const step = (w-2*pad)/Math.max(1,(series.length-1));
+  const pts = series.map((s,i)=>({ x: pad+i*step, y: h-pad-(s.value/max)*(h-2*pad) }));
+  const pathD = pts.map((p,i)=>(i===0?"M":"L")+p.x.toFixed(1)+","+p.y.toFixed(1)).join(" ");
+  const areaD = pathD+" L"+pts[pts.length-1].x.toFixed(1)+","+(h-pad)+" L"+pts[0].x.toFixed(1)+","+(h-pad)+" Z";
+  const circles = pts.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="var(--gold)"/>').join("");
+  const labels = series.map((s,i)=>'<text x="'+pts[i].x.toFixed(1)+'" y="'+(h-10)+'" text-anchor="middle" class="chart-label">'+s.label+'</text>').join("");
+  return '<svg class="chart-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMidYMid meet">'+
+    '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0%" stop-color="var(--gold)" stop-opacity="0.35"/><stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs>'+
+    '<path d="'+areaD+'" fill="url(#areaGrad)"/>'+
+    '<path d="'+pathD+'" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+
+    circles+labels+
+  '</svg>';
+}
+function buildBarChart(series){
+  const w=640,h=220,pad=34;
+  const max = Math.max(...series.map(s=>s.value),1);
+  const bw = (w-2*pad)/series.length*0.6;
+  const gap = (w-2*pad)/series.length;
+  const bars = series.map((s,i)=>{
+    const bh = (s.value/max)*(h-2*pad);
+    const x = pad+i*gap+(gap-bw)/2;
+    const y = h-pad-bh;
+    return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="4" fill="var(--blue)"/>'+
+      '<text x="'+(x+bw/2).toFixed(1)+'" y="'+(h-10)+'" text-anchor="middle" class="chart-label">'+s.label+'</text>';
+  }).join("");
+  return '<svg class="chart-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMidYMid meet">'+bars+'</svg>';
+}
+function renderAnalyticsPage(){
+  const el = document.getElementById("page-analytics");
+  const totalSaved = getTotalSaved();
+  const allContribs = App.data.contributions;
+  const totalContributed = round2(allContribs.reduce((s,c)=>s+c.amount,0));
+  const avgContribution = allContribs.length ? round2(totalContributed/allContribs.length) : 0;
+  const now = new Date();
+  const monthTotal = round2(allContribs.filter(c=>{ const d=parseLocalDate(c.date); return d && d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth(); }).reduce((s,c)=>s+c.amount,0));
+  const yearTotal = round2(allContribs.filter(c=>{ const d=parseLocalDate(c.date); return d && d.getFullYear()===now.getFullYear(); }).reduce((s,c)=>s+c.amount,0));
+
+  const compareGoals = [...App.data.goals].sort((a,b)=>goalProgress(b)-goalProgress(a));
+
+  el.innerHTML =
+  '<div class="page-header"><div><h1>Analytics</h1><p>A clear look at your savings journey — always based on your real data.</p></div></div>'+
+  '<div class="grid grid-4 mt-2">'+
+    statMini("Total Saved", formatMoney(totalSaved))+
+    statMini("Total Contributed", formatMoney(totalContributed))+
+    statMini("Active Goals", String(getActiveGoalsCount()))+
+    statMini("Completed Goals", String(getCompletedGoalsCount()))+
+  '</div>'+
+  '<div class="grid grid-4 mt-2">'+
+    statMini("Total Remaining", formatMoney(getTotalRemaining()))+
+    statMini("Average Contribution", formatMoney(avgContribution))+
+    statMini("This Month", formatMoney(monthTotal))+
+    statMini("This Year", formatMoney(yearTotal))+
+  '</div>'+
+  '<div class="grid grid-2 mt-3">'+
+    '<div class="card chart-card"><div class="section-title">'+icon("barchart")+' Savings Accumulated Over Time</div><div class="mt-2">'+buildLineChart(cumulativeSavingsSeries(8))+'</div></div>'+
+    '<div class="card chart-card"><div class="section-title">'+icon("calendar")+' Contributions by Month</div><div class="mt-2">'+buildBarChart(monthlyContributionTotals(6))+'</div></div>'+
+  '</div>'+
+  '<div class="card mt-3">'+
+    '<div class="section-title">'+icon("target")+' Goal Progress Comparison</div>'+
+    '<div class="mt-2">'+(compareGoals.length ? compareGoals.map(g=>{
+      const pct = Math.round(goalProgress(g));
+      return '<div class="compare-row"><div class="compare-name truncate">'+escapeHtml(g.name)+'</div>'+
+        '<div class="compare-track"><div class="compare-fill" style="width:'+pct+'%;background:var(--'+(g.status==="completed"?"green":g.color)+');"></div></div>'+
+        '<div class="compare-pct">'+pct+'%</div></div>';
+    }).join("") : '<p class="text-secondary" style="font-size:.88rem;">No goals to compare yet.</p>')+'</div>'+
+  '</div>';
+}
+function statMini(label,value){
+  return '<div class="stat-mini"><div class="lbl">'+label+'</div><div class="val">'+value+'</div></div>';
+}
+
+/* =========================================================================
+   RENDER: SETTINGS PAGE
+========================================================================= */
+function renderSettingsPage(){
+  const el = document.getElementById("page-settings");
+  const s = App.data.settings;
+  el.innerHTML =
+  '<div class="page-header"><div><h1>Settings</h1><p>Personalize GoalSave and manage your data.</p></div></div>'+
+
+  '<div class="card settings-section">'+
+    '<h3>Profile</h3>'+
+    '<div class="field mt-2"><label for="set-name">Display name</label><input class="input" id="set-name" value="'+escapeHtml(s.displayName)+'" maxlength="40"></div>'+
+  '</div>'+
+
+  '<div class="card settings-section">'+
+    '<h3>Currency</h3>'+
+    '<div class="field mt-2"><label for="set-currency">Preferred currency</label>'+
+    '<select class="input" id="set-currency">'+CURRENCIES.map(c=>'<option value="'+c.code+'"'+(s.currency===c.code?" selected":"")+'>'+c.label+'</option>').join("")+'</select>'+
+    '<div class="field-hint">All amounts across GoalSave update instantly.</div></div>'+
+  '</div>'+
+
+  '<div class="card settings-section">'+
+    '<h3>Theme</h3>'+
+    '<div class="segmented mt-2" id="theme-seg">'+
+      '<button data-theme-val="dark" class="'+(s.theme==="dark"?"active":"")+'">'+icon("moon")+' Dark</button>'+
+      '<button data-theme-val="light" class="'+(s.theme==="light"?"active":"")+'">'+icon("sun")+' Light</button>'+
+      '<button data-theme-val="system" class="'+(s.theme==="system"?"active":"")+'">'+icon("system")+' System</button>'+
+    '</div>'+
+  '</div>'+
+
+  '<div class="card settings-section">'+
+    '<h3>Preferences</h3>'+
+    '<div class="settings-row"><div><div class="settings-row-label">Compact layout</div><div class="settings-row-desc">Tighter spacing for smaller screens or dense views.</div></div>'+
+      '<label class="switch"><input type="checkbox" id="pref-density" '+(s.density==="compact"?"checked":"")+'><span class="switch-track"></span></label></div>'+
+    '<div class="settings-row"><div><div class="settings-row-label">Day starts at</div><div class="settings-row-desc">Adjusts your greeting timing.</div></div>'+
+      '<select class="input" id="pref-daystart" style="width:170px;">'+
+        '<option value="0"'+(s.dayStartOffset===0?" selected":"")+'>Midnight (standard)</option>'+
+        '<option value="5"'+(s.dayStartOffset===5?" selected":"")+'>5 AM (early riser)</option>'+
+        '<option value="-3"'+(s.dayStartOffset===-3?" selected":"")+'>3 AM (night owl)</option>'+
+      '</select></div>'+
+  '</div>'+
+
+  '<div class="card settings-section">'+
+    '<h3>Data Management</h3>'+
+    '<p class="settings-row-desc mt-1">Export a full backup, or import a CSV to replace your current data.</p>'+
+    '<div class="quick-actions mt-2">'+
+      '<button class="btn btn-secondary" data-action="export-csv">'+icon("download")+' Export CSV</button>'+
+      '<button class="btn btn-secondary" data-action="trigger-import">'+icon("upload")+' Import CSV</button>'+
+    '</div>'+
+    '<div class="field-hint mt-1">Import & Replace will overwrite all existing goals, funds, contributions and milestones after you confirm.</div>'+
+  '</div>'+
+
+  '<div class="card settings-section danger-zone">'+
+    '<h3 style="color:var(--red);">Danger Zone</h3>'+
+    '<p class="settings-row-desc mt-1">Permanently delete all GoalSave data stored in this browser and start fresh with an empty state.</p>'+
+    '<button class="btn btn-danger mt-2" data-action="delete-all-data">'+icon("trash")+' Delete All Data</button>'+
+  '</div>'+
+  '<p class="text-faint" style="font-size:.76rem;text-align:center;margin-top:1.5rem;">GoalSave v1.0 — all data stays in this browser.</p>';
+
+  document.getElementById("set-name").addEventListener("change", (e)=>{
+    const v = e.target.value.trim();
+    App.data.settings.displayName = v || "Alex";
+    saveData(); showToast("Display name updated.");
+  });
+  document.getElementById("set-currency").addEventListener("change", (e)=>{
+    App.data.settings.currency = e.target.value; saveData(); showToast("Currency updated to "+e.target.value+".");
+  });
+  document.getElementById("theme-seg").querySelectorAll("button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      App.data.settings.theme = btn.dataset.themeVal; saveData(); applyTheme();
+      document.getElementById("theme-seg").querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      showToast("Theme set to "+btn.dataset.themeVal+".");
+    });
+  });
+  document.getElementById("pref-density").addEventListener("change", (e)=>{ App.data.settings.density = e.target.checked?"compact":"comfortable"; saveData(); applyDensity(); });
+  document.getElementById("pref-daystart").addEventListener("change", (e)=>{ App.data.settings.dayStartOffset = parseInt(e.target.value,10); saveData(); });
+}
+function applyTheme(){
+  const t = App.data.settings.theme;
+  let effective = t;
+  if(t==="system") effective = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light";
+  document.documentElement.setAttribute("data-theme", effective);
+}
+function applyDensity(){ document.body.classList.toggle("density-compact", App.data.settings.density==="compact"); }
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", ()=>{ if(App.data.settings.theme==="system") applyTheme(); });
+
+/* =========================================================================
+   MODAL TEMPLATES: GOAL / FUND / CONTRIBUTION / MILESTONE / DETAIL
+========================================================================= */
+function goalModalHTML(goal){
+  const editing = !!goal;
+  return '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">'+
+    '<div class="modal-header"><h2 id="goalModalTitle">'+(editing?"Edit Goal":"Create Goal")+'</h2>'+
+      '<button class="icon-btn" data-action="close-modal" aria-label="Close">'+icon("close")+'</button></div>'+
+    '<form id="goal-form">'+
+      '<input type="hidden" id="goal-id" value="'+(editing?goal.id:"")+'">'+
+      '<div class="field" id="f-goal-name"><label for="goal-name">Goal name</label><input class="input" id="goal-name" required maxlength="60" value="'+(editing?escapeHtml(goal.name):"")+'" placeholder="e.g. New Laptop"><div class="field-error">Please enter a goal name.</div></div>'+
+      '<div class="field-row">'+
+        '<div class="field" id="f-goal-target"><label for="goal-target">Target amount</label><input class="input" id="goal-target" type="number" min="0.01" step="0.01" required value="'+(editing?goal.target:"")+'" placeholder="1000"><div class="field-error">Enter a target greater than zero.</div></div>'+
+        '<div class="field"><label for="goal-date">Target date (optional)</label><input class="input" id="goal-date" type="date" value="'+(editing?goal.targetDate:"")+'"></div>'+
+      '</div>'+
+      '<div class="field"><label>Icon</label>'+iconPickerHTML(editing?goal.icon:"target","goal-icon")+'</div>'+
+      '<div class="field"><label>Color</label>'+colorPickerHTML(editing?goal.color:"gold","goal-color")+'</div>'+
+      '<div class="field"><label for="goal-note">Notes (optional)</label><textarea class="input" id="goal-note" maxlength="240" placeholder="Why this goal matters...">'+(editing?escapeHtml(goal.note):"")+'</textarea></div>'+
+      '<div class="modal-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>'+
+      '<button type="submit" class="btn btn-primary">'+icon("check")+' '+(editing?"Save Changes":"Create Goal")+'</button></div>'+
+    '</form>'+
+  '</div>';
+}
+
+function fundModalHTML(fund){
+  const editing = !!fund;
+  return '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="fundModalTitle">'+
+    '<div class="modal-header"><h2 id="fundModalTitle">'+(editing?"Edit Sinking Fund":"Create Sinking Fund")+'</h2>'+
+      '<button class="icon-btn" data-action="close-modal" aria-label="Close">'+icon("close")+'</button></div>'+
+    '<form id="fund-form">'+
+      '<input type="hidden" id="fund-id" value="'+(editing?fund.id:"")+'">'+
+      '<div class="field" id="f-fund-name"><label for="fund-name">Fund name</label><input class="input" id="fund-name" required maxlength="60" value="'+(editing?escapeHtml(fund.name):"")+'" placeholder="e.g. Christmas"><div class="field-error">Please enter a fund name.</div></div>'+
+      '<div class="field-row">'+
+        '<div class="field" id="f-fund-target"><label for="fund-target">Target amount</label><input class="input" id="fund-target" type="number" min="0.01" step="0.01" required value="'+(editing?fund.target:"")+'" placeholder="500"><div class="field-error">Enter a target greater than zero.</div></div>'+
+        '<div class="field"><label for="fund-deadline">Deadline (optional)</label><input class="input" id="fund-deadline" type="date" value="'+(editing?fund.deadline:"")+'"></div>'+
+      '</div>'+
+      '<div class="field"><label>Icon</label>'+iconPickerHTML(editing?fund.icon:"gift","fund-icon")+'</div>'+
+      '<div class="field"><label>Color</label>'+colorPickerHTML(editing?fund.color:"blue","fund-color")+'</div>'+
+      '<div class="field"><label for="fund-note">Notes (optional)</label><textarea class="input" id="fund-note" maxlength="240">'+(editing?escapeHtml(fund.note):"")+'</textarea></div>'+
+      '<div class="modal-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>'+
+      '<button type="submit" class="btn btn-primary">'+icon("check")+' '+(editing?"Save Changes":"Create Fund")+'</button></div>'+
+    '</form>'+
+  '</div>';
+}
+
+function contributionModalHTML(presetType, presetId){
+  const goals = App.data.goals.filter(g=>g.status!=="completed");
+  const funds = App.data.sinkingFunds.filter(f=>f.status!=="completed");
+  const hasOptions = goals.length || funds.length;
+  const presetValue = presetId ? presetType+":"+presetId : "";
+  let targetLabel = "";
+  if(presetId){
+    const obj = presetType==="goal" ? App.data.goals.find(g=>g.id===presetId) : App.data.sinkingFunds.find(f=>f.id===presetId);
+    if(obj) targetLabel = obj.name;
+  }
+  return '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="contribModalTitle">'+
+    '<div class="modal-header"><h2 id="contribModalTitle">Add Money</h2>'+
+      '<button class="icon-btn" data-action="close-modal" aria-label="Close">'+icon("close")+'</button></div>'+
+    (hasOptions ? '<form id="contribution-form">'+
+      '<div class="field" id="f-contrib-target"><label for="contrib-target">'+(presetId?"Goal / Fund":"Add money to")+'</label>'+
+      (presetId ?
+        '<input class="input" value="'+escapeHtml(targetLabel)+'" disabled><input type="hidden" id="contrib-target" value="'+presetValue+'">'
+        :
+        '<select class="input" id="contrib-target" required>'+
+          '<option value="">Choose a goal or fund…</option>'+
+          (goals.length?'<optgroup label="Savings Goals">'+goals.map(g=>'<option value="goal:'+g.id+'">'+escapeHtml(g.name)+'</option>').join("")+'</optgroup>':"")+
+          (funds.length?'<optgroup label="Sinking Funds">'+funds.map(f=>'<option value="fund:'+f.id+'">'+escapeHtml(f.name)+'</option>').join("")+'</optgroup>':"")+
+        '</select>'
+      )+
+      '<div class="field-error">Please choose a goal or fund.</div></div>'+
+      '<div class="field-row">'+
+        '<div class="field" id="f-contrib-amount"><label for="contrib-amount">Amount</label><input class="input" id="contrib-amount" type="number" min="0.01" step="0.01" required placeholder="25"><div class="field-error">Enter an amount greater than zero.</div></div>'+
+        '<div class="field" id="f-contrib-date"><label for="contrib-date">Date</label><input class="input" id="contrib-date" type="date" value="'+todayStr()+'" required><div class="field-error">Please enter a valid date.</div></div>'+
+      '</div>'+
+      '<div class="field"><label for="contrib-note">Note (optional)</label><input class="input" id="contrib-note" maxlength="120" placeholder="e.g. Birthday money"></div>'+
+      '<div class="modal-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>'+
+      '<button type="submit" class="btn btn-primary">'+icon("check")+' Add Contribution</button></div>'+
+    '</form>'
+    : '<p class="text-secondary">Create a goal or sinking fund first before adding money.</p><div class="modal-actions"><button class="btn btn-primary" data-action="close-modal">Got it</button></div>')+
+  '</div>';
+}
+
+function milestoneModalHTML(presetGoalId){
+  const goals = App.data.goals;
+  return '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="msModalTitle">'+
+    '<div class="modal-header"><h2 id="msModalTitle">Add Custom Milestone</h2>'+
+      '<button class="icon-btn" data-action="close-modal" aria-label="Close">'+icon("close")+'</button></div>'+
+    (goals.length ? '<form id="milestone-form">'+
+      '<div class="field" id="f-ms-goal"><label for="ms-goal">Goal</label><select class="input" id="ms-goal" required>'+
+        '<option value="">Choose a goal…</option>'+
+        goals.map(g=>'<option value="'+g.id+'"'+(presetGoalId===g.id?" selected":"")+'>'+escapeHtml(g.name)+'</option>').join("")+
+      '</select><div class="field-error">Please choose a goal.</div></div>'+
+      '<div class="field"><label>Checkpoint type</label>'+
+        '<div class="segmented" id="ms-type-seg">'+
+          '<button type="button" data-type="percent" class="active">Percentage</button>'+
+          '<button type="button" data-type="amount">Fixed Amount</button>'+
+        '</div><input type="hidden" id="ms-type" value="percent"></div>'+
+      '<div class="field" id="f-ms-value"><label for="ms-value" id="ms-value-label">Percent of goal (%)</label><input class="input" id="ms-value" type="number" min="0.01" step="0.01" required placeholder="60"><div class="field-error">Enter a value greater than zero.</div></div>'+
+      '<div class="field"><label for="ms-label">Label (optional)</label><input class="input" id="ms-label" maxlength="40" placeholder="e.g. Halfway treat"></div>'+
+      '<div class="field"><label for="ms-note">Reward / note (optional)</label><input class="input" id="ms-note" maxlength="120" placeholder="e.g. Small celebration dinner"></div>'+
+      '<div class="modal-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>'+
+      '<button type="submit" class="btn btn-primary">'+icon("check")+' Add Milestone</button></div>'+
+    '</form>' : '<p class="text-secondary">Create a goal first before adding a milestone.</p><div class="modal-actions"><button class="btn btn-primary" data-action="close-modal">Got it</button></div>')+
+  '</div>';
+}
+
+function editNameModalHTML(){
+  return '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">'+
+    '<div class="modal-header"><h2 id="nameModalTitle">Edit Display Name</h2><button class="icon-btn" data-action="close-modal" aria-label="Close">'+icon("close")+'</button></div>'+
+    '<form id="name-form"><div class="field" id="f-display-name"><label for="display-name-input">Display name</label>'+
+    '<input class="input" id="display-name-input" maxlength="40" value="'+escapeHtml(App.data.settings.displayName)+'" required><div class="field-error">Please enter a name.</div></div>'+
+    '<div class="modal-actions"><button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>'+
+    '<button type="submit" class="btn btn-primary">'+icon("check")+' Save</button></div></form>'+
+  '</div>';
+}
+
+function detailModalHTML(entity, type){
+  const isGoal = type==="goal";
+  const saved = isGoal ? goalSaved(entity.id) : fundSaved(entity.id);
+  const remaining = isGoal ? goalRemaining(entity) : fundRemaining(entity);
+  const pct = Math.round(isGoal ? goalProgress(entity) : fundProgress(entity));
+  const contribs = (isGoal ? goalContributions(entity.id) : fundContributions(entity.id)).slice().reverse();
+  const nextM = isGoal ? getNextMilestone(entity) : null;
+  const dateField = isGoal ? entity.targetDate : entity.deadline;
+  return '<div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="detailTitle">'+
+    '<div class="modal-header">'+
+      '<div class="detail-head" style="margin-bottom:0;">'+
+        '<div class="detail-icon" style="background:var(--'+entity.color+'-soft);color:var(--'+entity.color+');">'+icon(entity.icon)+'</div>'+
+        '<div><div class="detail-title" id="detailTitle">'+escapeHtml(entity.name)+'</div>'+statusPill(entity.status)+'</div>'+
+      '</div>'+
+      '<button class="icon-btn" data-action="close-modal" aria-label="Close">'+icon("close")+'</button>'+
+    '</div>'+
+    '<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:'+(entity.status==="completed"?"var(--green)":"var(--"+entity.color+")")+';"></div></div>'+
+    '<div class="detail-status-msg'+(entity.status==="completed"?" done":"")+'">'+(entity.status==="completed" ? (isGoal? "Goal completed! 🎉" : "Fund fully funded! 🎉") : formatMoney(remaining)+" remaining")+'</div>'+
+    '<div class="detail-grid">'+
+      '<div class="detail-stat"><div class="lbl">Saved</div><div class="val">'+formatMoney(saved)+'</div></div>'+
+      '<div class="detail-stat"><div class="lbl">Target</div><div class="val">'+formatMoney(entity.target)+'</div></div>'+
+      '<div class="detail-stat"><div class="lbl">Progress</div><div class="val">'+pct+'%</div></div>'+
+      '<div class="detail-stat"><div class="lbl">'+(isGoal?"Target Date":"Deadline")+'</div><div class="val" style="font-size:.85rem;">'+(dateField?formatDate(dateField):"—")+'</div></div>'+
+      '<div class="detail-stat"><div class="lbl">Time Left</div><div class="val" style="font-size:.85rem;">'+deadlineText(dateField, entity.status)+'</div></div>'+
+      '<div class="detail-stat"><div class="lbl">Total Contributed</div><div class="val">'+formatMoney(saved)+'</div></div>'+
+    '</div>'+
+    (isGoal ? '<div class="detail-section-title">Next milestone</div>'+(nextM ? '<div class="milestone-chip">'+icon("star")+' '+nextM.label+' — '+formatMoney(nextM.amount)+'</div>' : '<div class="milestone-chip done">'+icon("check")+' All milestones reached</div>') : '')+
+    (entity.note ? '<div class="detail-section-title">Notes</div><div class="notes-box wrap-anywhere">'+escapeHtml(entity.note)+'</div>' : '')+
+    '<div class="detail-section-title">Contribution history</div>'+
+    (contribs.length ? contribs.map(c=>
+      '<div class="contrib-row"><div class="contrib-info"><div class="contrib-amount">+'+formatMoney(c.amount)+'</div><div class="contrib-date">'+formatDate(c.date)+'</div>'+
+      (c.note?'<div class="contrib-note wrap-anywhere">'+escapeHtml(c.note)+'</div>':'')+'</div>'+
+      '<button class="contrib-del" data-action="delete-contribution" data-id="'+c.id+'" data-entity-type="'+type+'" data-entity-id="'+entity.id+'" aria-label="Delete contribution">'+icon("trash")+'</button></div>'
+    ).join("") : '<p class="text-secondary" style="font-size:.85rem;">No contributions yet.</p>')+
+    '<div class="detail-footer-actions">'+
+      (entity.status!=="completed" ? '<button class="btn btn-primary" data-action="open-contribution-modal" data-type="'+type+'" data-id="'+entity.id+'">'+icon("plus")+' Add Money</button>':'')+
+      '<button class="btn btn-secondary" data-action="open-'+type+'-modal" data-id="'+entity.id+'">'+icon("edit")+' Edit</button>'+
+      (entity.status!=="completed" ? '<button class="btn btn-secondary" data-action="toggle-pause-'+type+'" data-id="'+entity.id+'">'+(entity.status==="paused"?"Resume":"Pause")+'</button>':'')+
+      (entity.status!=="completed" ? '<button class="btn btn-secondary" data-action="complete-'+type+'" data-id="'+entity.id+'">'+icon("check")+' Mark Completed</button>':'')+
+      '<button class="btn btn-danger" data-action="delete-'+type+'" data-id="'+entity.id+'">'+icon("trash")+' Delete</button>'+
+    '</div>'+
+  '</div>';
+}
+
+/* =========================================================================
+   FORM VALIDATION HELPERS
+========================================================================= */
+function setFieldError(fieldId, invalid){
+  const f = document.getElementById(fieldId);
+  if(f) f.classList.toggle("invalid", !!invalid);
+}
+
+/* =========================================================================
+   MUTATIONS: GOALS
+========================================================================= */
+function afterMutation(){
+  saveData();
+  renderPage(App.state.page);
+  refreshOpenModal();
+}
+
+function submitGoalForm(){
+  const idEl = document.getElementById("goal-id");
+  const nameEl = document.getElementById("goal-name");
+  const targetEl = document.getElementById("goal-target");
+  const dateEl = document.getElementById("goal-date");
+  const noteEl = document.getElementById("goal-note");
+  const iconEl = document.getElementById("goal-icon");
+  const colorEl = document.getElementById("goal-color");
+
+  const name = nameEl.value.trim();
+  const target = parseFloat(targetEl.value);
+  let valid = true;
+  setFieldError("f-goal-name", !name); if(!name) valid=false;
+  setFieldError("f-goal-target", !(isFinite(target) && target>0)); if(!(isFinite(target)&&target>0)) valid=false;
+  if(!valid) return;
+
+  const date = dateEl.value && isValidDateStr(dateEl.value) ? dateEl.value : "";
+  const editingId = idEl.value;
+
+  if(editingId){
+    const g = App.data.goals.find(x=>x.id===editingId);
+    if(g){
+      g.name=name; g.target=round2(target); g.targetDate=date; g.note=noteEl.value.trim(); g.icon=iconEl.value; g.color=colorEl.value; g.updatedAt=nowISO();
+      recalcGoalStatus(g);
+      closeModal(); afterMutation(); showToast("Goal updated.");
+    }
+  } else {
+    const g = { id: uid("g"), name, target: round2(target), targetDate: date, icon: iconEl.value, color: colorEl.value, status:"active", note: noteEl.value.trim(), createdAt: nowISO(), updatedAt: nowISO() };
+    App.data.goals.push(g);
+    closeModal(); afterMutation(); showToast("Goal created! Let's start saving. 🎯");
+  }
+}
+
+function submitFundForm(){
+  const idEl = document.getElementById("fund-id");
+  const nameEl = document.getElementById("fund-name");
+  const targetEl = document.getElementById("fund-target");
+  const deadlineEl = document.getElementById("fund-deadline");
+  const noteEl = document.getElementById("fund-note");
+  const iconEl = document.getElementById("fund-icon");
+  const colorEl = document.getElementById("fund-color");
+
+  const name = nameEl.value.trim();
+  const target = parseFloat(targetEl.value);
+  let valid = true;
+  setFieldError("f-fund-name", !name); if(!name) valid=false;
+  setFieldError("f-fund-target", !(isFinite(target) && target>0)); if(!(isFinite(target)&&target>0)) valid=false;
+  if(!valid) return;
+
+  const deadline = deadlineEl.value && isValidDateStr(deadlineEl.value) ? deadlineEl.value : "";
+  const editingId = idEl.value;
+
+  if(editingId){
+    const f = App.data.sinkingFunds.find(x=>x.id===editingId);
+    if(f){
+      f.name=name; f.target=round2(target); f.deadline=deadline; f.note=noteEl.value.trim(); f.icon=iconEl.value; f.color=colorEl.value; f.updatedAt=nowISO();
+      recalcFundStatus(f);
+      closeModal(); afterMutation(); showToast("Sinking fund updated.");
+    }
+  } else {
+    const f = { id: uid("f"), name, target: round2(target), deadline, icon: iconEl.value, color: colorEl.value, status:"active", note: noteEl.value.trim(), createdAt: nowISO(), updatedAt: nowISO() };
+    App.data.sinkingFunds.push(f);
+    closeModal(); afterMutation(); showToast("Sinking fund created.");
+  }
+}
+
+function submitContributionForm(){
+  const targetEl = document.getElementById("contrib-target");
+  const amountEl = document.getElementById("contrib-amount");
+  const dateEl = document.getElementById("contrib-date");
+  const noteEl = document.getElementById("contrib-note");
+
+  const targetVal = targetEl.value;
+  const amount = parseFloat(amountEl.value);
+  const date = dateEl.value;
+  let valid = true;
+  setFieldError("f-contrib-target", !targetVal); if(!targetVal) valid=false;
+  setFieldError("f-contrib-amount", !(isFinite(amount) && amount>0)); if(!(isFinite(amount)&&amount>0)) valid=false;
+  setFieldError("f-contrib-date", !isValidDateStr(date)); if(!isValidDateStr(date)) valid=false;
+  if(!valid) return;
+
+  const [targetType, targetId] = targetVal.split(":");
+  addContribution(targetType, targetId, amount, date, noteEl.value.trim());
+  closeModal();
+}
+
+function addContribution(targetType, targetId, amount, date, note){
+  amount = round2(amount);
+  let entity = targetType==="goal" ? App.data.goals.find(g=>g.id===targetId) : App.data.sinkingFunds.find(f=>f.id===targetId);
+  if(!entity){ showToast("Could not find the selected goal or fund.","error"); return; }
+
+  let beforeMilestones = 0;
+  if(targetType==="goal") beforeMilestones = countReachedMilestones(entity);
+
+  App.data.contributions.push({ id: uid("c"), targetType, targetId, amount, date, note: (note||"").trim(), createdAt: nowISO() });
+
+  let statusChange = null;
+  if(targetType==="goal"){ statusChange = recalcGoalStatus(entity); entity.updatedAt = nowISO(); }
+  else { statusChange = recalcFundStatus(entity); entity.updatedAt = nowISO(); }
+
+  afterMutation();
+
+  const msgOn = App.data.settings.motivationalMessages;
+  if(statusChange==="completed"){
+    showToast(msgOn ? "Goal completed! 🎉 " + entity.name : "Marked as completed.");
+  } else if(targetType==="goal" && msgOn){
+    const afterMilestones = countReachedMilestones(entity);
+    if(afterMilestones > beforeMilestones){
+      showToast("Milestone reached! You're building momentum. 🌟");
+    } else {
+      showToast("Nice! You're "+formatMoney(amount)+" closer to "+entity.name+".");
+    }
+  } else {
+    showToast("Contribution of "+formatMoney(amount)+" added.");
+  }
+}
+
+function submitMilestoneForm(){
+  const goalEl = document.getElementById("ms-goal");
+  const typeEl = document.getElementById("ms-type");
+  const valueEl = document.getElementById("ms-value");
+  const labelEl = document.getElementById("ms-label");
+  const noteEl = document.getElementById("ms-note");
+
+  const goalId = goalEl.value;
+  const value = parseFloat(valueEl.value);
+  let valid = true;
+  setFieldError("f-ms-goal", !goalId); if(!goalId) valid=false;
+  setFieldError("f-ms-value", !(isFinite(value)&&value>0)); if(!(isFinite(value)&&value>0)) valid=false;
+  if(!valid) return;
+
+  const type = typeEl.value;
+  const label = labelEl.value.trim() || (type==="percent" ? value+"%" : "Custom checkpoint");
+
+  App.data.milestones.push({ id: uid("m"), goalId, type, value: round2(value), label, note: noteEl.value.trim(), createdAt: nowISO() });
+  closeModal(); afterMutation(); showToast("Milestone added.");
+}
+
+function submitNameForm(){
+  const input = document.getElementById("display-name-input");
+  const v = input.value.trim();
+  setFieldError("f-display-name", !v);
+  if(!v) return;
+  App.data.settings.displayName = v;
+  closeModal(); afterMutation(); showToast("Name updated.");
+}
+
+/* =========================================================================
+   CSV EXPORT / IMPORT
+========================================================================= */
+function csvEscape(val){
+  val = (val===undefined || val===null) ? "" : String(val);
+  if(/[",\n\r]/.test(val)) val = '"'+val.replace(/"/g,'""')+'"';
+  return val;
+}
+const CSV_HEADER = ["record_type","id","name","icon","color","target","amount","date","status","note","target_type","target_id","milestone_type","milestone_value","milestone_label","setting_key","setting_value","created_at","updated_at"];
+
+function exportCSV(){
+  const rows = [CSV_HEADER];
+  App.data.goals.forEach(g=>{
+    rows.push(["goal", g.id, g.name, g.icon, g.color, g.target, goalSaved(g.id), g.targetDate, g.status, g.note, "", "", "", "", "", "", "", g.createdAt, g.updatedAt]);
+  });
+  App.data.sinkingFunds.forEach(f=>{
+    rows.push(["sinking_fund", f.id, f.name, f.icon, f.color, f.target, fundSaved(f.id), f.deadline, f.status, f.note, "", "", "", "", "", "", "", f.createdAt, f.updatedAt]);
+  });
+  App.data.contributions.forEach(c=>{
+    rows.push(["contribution", c.id, "", "", "", "", c.amount, c.date, "", c.note, c.targetType, c.targetId, "", "", "", "", "", c.createdAt, ""]);
+  });
+  App.data.milestones.forEach(m=>{
+    rows.push(["milestone", m.id, "", "", "", "", "", "", "", m.note, "", m.goalId, m.type, m.value, m.label, "", "", m.createdAt, ""]);
+  });
+  Object.entries(App.data.settings).forEach(([k,v])=>{
+    rows.push(["settings","","","","","","","","","","","","","","",k,String(v),"",""]);
+  });
+  const csv = rows.map(r=>r.map(csvEscape).join(",")).join("\r\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const d = new Date();
+  const dateStr = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  a.href = url; a.download = "goalsave-backup-"+dateStr+".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast("Backup exported successfully.");
+}
+
+function parseCSV(text){
+  const rows = []; let row = []; let field = ""; let inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; } else { inQuotes = false; }
+      } else { field += c; }
+    } else {
+      if(c === '"'){ inQuotes = true; }
+      else if(c === ','){ row.push(field); field = ""; }
+      else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=""; }
+      else if(c === '\r'){ /* ignore */ }
+      else { field += c; }
+    }
+  }
+  if(field.length>0 || row.length>0){ row.push(field); rows.push(row); }
+  return rows.filter(r => !(r.length===1 && r[0].trim()===""));
+}
+
+function handleImportFile(file){
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const text = String(e.target.result || "");
+      const rows = parseCSV(text);
+      if(rows.length < 2){ showToast("The CSV file appears to be empty.","error"); return; }
+      const header = rows[0].map(h=>h.trim());
+      const idx = {}; CSV_HEADER.forEach(h=> idx[h] = header.indexOf(h));
+      if(idx.record_type === -1){ showToast("This doesn't look like a GoalSave CSV file.","error"); return; }
+
+      const goals=[], funds=[], contributions=[], milestones=[]; const settings = {};
+      let skipped = 0;
+
+      for(let i=1;i<rows.length;i++){
+        const r = rows[i];
+        const get = (key)=> idx[key]>-1 ? (r[idx[key]]||"").trim() : "";
+        const type = get("record_type");
+        if(type === "goal"){
+          const target = parseFloat(get("target"));
+          if(get("id") && get("name") && isFinite(target) && target>0){
+            goals.push({ id:get("id"), name:get("name"), icon:get("icon")||"target", color:get("color")||"gold", target: round2(target),
+              targetDate: isValidDateStr(get("date"))?get("date"):"", status:get("status")||"active", note:get("note")||"",
+              createdAt:get("created_at")||nowISO(), updatedAt:get("updated_at")||get("created_at")||nowISO() });
+          } else skipped++;
+        } else if(type === "sinking_fund"){
+          const target = parseFloat(get("target"));
+          if(get("id") && get("name") && isFinite(target) && target>0){
+            funds.push({ id:get("id"), name:get("name"), icon:get("icon")||"wallet", color:get("color")||"blue", target: round2(target),
+              deadline: isValidDateStr(get("date"))?get("date"):"", status:get("status")||"active", note:get("note")||"",
+              createdAt:get("created_at")||nowISO(), updatedAt:get("updated_at")||get("created_at")||nowISO() });
+          } else skipped++;
+        } else if(type === "contribution"){
+          const amount = parseFloat(get("amount"));
+          if(get("id") && (get("target_type")==="goal"||get("target_type")==="fund") && get("target_id") && isFinite(amount) && amount>0 && isValidDateStr(get("date"))){
+            contributions.push({ id:get("id"), targetType:get("target_type"), targetId:get("target_id"), amount: round2(amount), date:get("date"), note:get("note")||"", createdAt:get("created_at")||nowISO() });
+          } else skipped++;
+        } else if(type === "milestone"){
+          const value = parseFloat(get("milestone_value"));
+          if(get("id") && get("target_id") && (get("milestone_type")==="percent"||get("milestone_type")==="amount") && isFinite(value) && value>0){
+            milestones.push({ id:get("id"), goalId:get("target_id"), type:get("milestone_type"), value: round2(value), label:get("milestone_label")||(get("milestone_type")+" checkpoint"), note:get("note")||"", createdAt:get("created_at")||nowISO() });
+          } else skipped++;
+        } else if(type === "settings"){
+          const key = get("setting_key");
+          if(key) settings[key] = get("setting_value");
+          else skipped++;
+        } else {
+          skipped++;
+        }
+      }
+
+      if(settings.smallWinAmount) settings.smallWinAmount = parseFloat(settings.smallWinAmount) || 25;
+      if(settings.dayStartOffset) settings.dayStartOffset = parseInt(settings.dayStartOffset,10) || 0;
+      if(settings.motivationalMessages !== undefined) settings.motivationalMessages = settings.motivationalMessages === "true";
+
+      const goalIds = new Set(goals.map(g=>g.id));
+      const fundIds = new Set(funds.map(f=>f.id));
+      const cleanContribs = contributions.filter(c => c.targetType==="goal" ? goalIds.has(c.targetId) : fundIds.has(c.targetId));
+      const cleanMilestones = milestones.filter(m => goalIds.has(m.goalId));
+      const orphanSkipped = (contributions.length - cleanContribs.length) + (milestones.length - cleanMilestones.length);
+
+      if(goals.length===0 && funds.length===0 && cleanContribs.length===0){
+        showToast("No valid records found in this CSV file.","error");
+        return;
+      }
+
+      const candidate = validateData({
+        version:1,
+        settings: Object.assign(defaultSettings(), settings),
+        goals, sinkingFunds: funds, contributions: cleanContribs, milestones: cleanMilestones,
+        meta: { createdAt: nowISO(), lastModified: nowISO() }
+      });
+
+      if(!candidate){ showToast("The CSV file could not be processed.","error"); return; }
+
+      App.state.importCandidate = candidate;
+      const totalSkipped = skipped + orphanSkipped;
+      confirmDialog({
+        title: "Import & Replace Data?",
+        message: "Found "+goals.length+" goals, "+funds.length+" sinking funds, "+cleanContribs.length+" contributions, and "+cleanMilestones.length+" milestones."+
+                 (totalSkipped>0 ? " ("+totalSkipped+" row(s) were skipped due to invalid or unsupported data.)" : "")+
+                 " This will replace ALL current GoalSave data and cannot be undone. Continue?",
+        confirmText: "Import & Replace",
+        danger: true,
+        onConfirm: ()=>{
+          App.data = App.state.importCandidate;
+          App.state.importCandidate = null;
+          saveData();
+          applyTheme(); applyDensity();
+          setPage("home");
+          showToast("Data imported successfully.");
+        }
+      });
+    }catch(err){
+      console.error(err);
+      showToast("Could not read this CSV file. Please check the format.","error");
+    }
+  };
+  reader.onerror = function(){ showToast("There was a problem reading the file.","error"); };
+  reader.readAsText(file);
+}
+
+/* =========================================================================
+   DELETE OPERATIONS (cascading, scoped)
+========================================================================= */
+function deleteGoal(id){
+  App.data.goals = App.data.goals.filter(g=>g.id!==id);
+  App.data.contributions = App.data.contributions.filter(c=>!(c.targetType==="goal" && c.targetId===id));
+  App.data.milestones = App.data.milestones.filter(m=>m.goalId!==id);
+}
+function deleteFund(id){
+  App.data.sinkingFunds = App.data.sinkingFunds.filter(f=>f.id!==id);
+  App.data.contributions = App.data.contributions.filter(c=>!(c.targetType==="fund" && c.targetId===id));
+}
+
+/* =========================================================================
+   ACTION HANDLER (event delegation)
+========================================================================= */
+function closeOpenMenu(){
+  document.querySelectorAll(".menu-dropdown").forEach(d=>d.classList.add("hidden"));
+  App.state.openMenuId = null;
+}
+
+function handleAction(action, el, ds){
+  switch(action){
+    case "nav":
+      setPage(ds.page); break;
+    case "toggle-sidebar":
+      document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("sidebarBackdrop").classList.toggle("show");
+      break;
+    case "close-sidebar":
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("sidebarBackdrop").classList.remove("show");
+      break;
+    case "toggle-menu": {
+      const cardMenu = el.closest(".card-menu");
+      const dd = cardMenu ? cardMenu.querySelector(".menu-dropdown") : null;
+      const wasHidden = dd ? dd.classList.contains("hidden") : true;
+      closeOpenMenu();
+      if(dd && wasHidden){ dd.classList.remove("hidden"); App.state.openMenuId = ds.id; }
+      break;
+    }
+    case "close-modal": closeModal(); break;
+    case "confirm-yes": {
+      const cb = App.state.confirmCallback; App.state.confirmCallback=null;
+      closeModal(); if(cb) cb();
+      break;
+    }
+    case "edit-name": openModal(editNameModalHTML(), "edit-name"); break;
+
+    case "open-goal-modal": {
+      closeOpenMenu();
+      const goal = ds.id ? App.data.goals.find(g=>g.id===ds.id) : null;
+      openModal(goalModalHTML(goal), goal ? "goal-edit:"+goal.id : "goal-new");
+      break;
+    }
+    case "open-fund-modal": {
+      closeOpenMenu();
+      const fund = ds.id ? App.data.sinkingFunds.find(f=>f.id===ds.id) : null;
+      openModal(fundModalHTML(fund), fund ? "fund-edit:"+fund.id : "fund-new");
+      break;
+    }
+    case "open-contribution-modal": {
+      closeOpenMenu();
+      openModal(contributionModalHTML(ds.type, ds.id), "contribution");
+      break;
+    }
+    case "open-milestone-modal": {
+      closeOpenMenu();
+      openModal(milestoneModalHTML(ds.goalId), "milestone");
+      break;
+    }
+    case "open-goal-detail": {
+      closeOpenMenu();
+      const g = App.data.goals.find(x=>x.id===ds.id);
+      if(g) openModal(detailModalHTML(g,"goal"), "goal-detail:"+g.id);
+      break;
+    }
+    case "open-fund-detail": {
+      closeOpenMenu();
+      const f = App.data.sinkingFunds.find(x=>x.id===ds.id);
+      if(f) openModal(detailModalHTML(f,"fund"), "fund-detail:"+f.id);
+      break;
+    }
+    case "toggle-pause-goal": {
+      const g = App.data.goals.find(x=>x.id===ds.id);
+      if(g && g.status!=="completed"){ g.status = g.status==="paused"?"active":"paused"; g.updatedAt=nowISO(); afterMutation(); showToast(g.status==="paused"?"Goal paused.":"Goal resumed."); }
+      break;
+    }
+    case "complete-goal": {
+      const g = App.data.goals.find(x=>x.id===ds.id);
+      if(g){ g.status="completed"; g.updatedAt=nowISO(); afterMutation(); showToast("Goal completed! 🎉"); }
+      break;
+    }
+    case "toggle-pause-fund": {
+      const f = App.data.sinkingFunds.find(x=>x.id===ds.id);
+      if(f && f.status!=="completed"){ f.status = f.status==="paused"?"active":"paused"; f.updatedAt=nowISO(); afterMutation(); showToast(f.status==="paused"?"Fund paused.":"Fund resumed."); }
+      break;
+    }
+    case "complete-fund": {
+      const f = App.data.sinkingFunds.find(x=>x.id===ds.id);
+      if(f){ f.status="completed"; f.updatedAt=nowISO(); afterMutation(); showToast("Sinking fund fully funded! 🎉"); }
+      break;
+    }
+    case "delete-goal": {
+      closeOpenMenu();
+      const g = App.data.goals.find(x=>x.id===ds.id);
+      if(!g) return;
+      const count = goalContributions(g.id).length;
+      confirmDialog({
+        title: "Delete \""+g.name+"\"?",
+        message: "This will permanently delete this goal"+(count?" and its "+count+" contribution record(s)":"")+". This cannot be undone.",
+        confirmText: "Delete Goal", danger:true,
+        onConfirm: ()=>{ deleteGoal(g.id); closeModal(); afterMutation(); showToast("Goal deleted."); }
+      });
+      break;
+    }
+    case "delete-fund": {
+      closeOpenMenu();
+      const f = App.data.sinkingFunds.find(x=>x.id===ds.id);
+      if(!f) return;
+      const count = fundContributions(f.id).length;
+      confirmDialog({
+        title: "Delete \""+f.name+"\"?",
+        message: "This will permanently delete this fund"+(count?" and its "+count+" contribution record(s)":"")+". This cannot be undone.",
+        confirmText: "Delete Fund", danger:true,
+        onConfirm: ()=>{ deleteFund(f.id); closeModal(); afterMutation(); showToast("Sinking fund deleted."); }
+      });
+      break;
+    }
+    case "delete-contribution": {
+      const cid = ds.id;
+      const returnKind = ds.entityType==="goal" ? "goal-detail:"+ds.entityId : "fund-detail:"+ds.entityId;
+      confirmDialog({
+        title:"Delete contribution?",
+        message:"This record will be removed and totals will recalculate automatically.",
+        confirmText:"Delete", danger:true,
+        onConfirm: ()=>{
+          App.data.contributions = App.data.contributions.filter(c=>c.id!==cid);
+          if(ds.entityType==="goal"){ const g=App.data.goals.find(x=>x.id===ds.entityId); if(g) recalcGoalStatus(g); }
+          else { const f=App.data.sinkingFunds.find(x=>x.id===ds.entityId); if(f) recalcFundStatus(f); }
+          // Return to the detail view (modal stays open) instead of closing it
+          App.state.modalKind = returnKind;
+          saveData();
+          renderPage(App.state.page);
+          refreshOpenModal();
+          showToast("Contribution removed.");
+        }
+      });
+      break;
+    }
+    case "delete-milestone": {
+      const mid = ds.id;
+      confirmDialog({
+        title:"Delete milestone?",
+        message:"This custom checkpoint will be removed.",
+        confirmText:"Delete", danger:true,
+        onConfirm: ()=>{ App.data.milestones = App.data.milestones.filter(m=>m.id!==mid); closeModal(); afterMutation(); showToast("Milestone removed."); }
+      });
+      break;
+    }
+    case "export-csv": exportCSV(); break;
+    case "trigger-import": document.getElementById("importFileInput").click(); break;
+    case "delete-all-data": {
+      confirmDialog({
+        title:"Delete All Data?",
+        message:"This permanently deletes every goal, fund, contribution and milestone stored by GoalSave in this browser, and cannot be undone. You'll start from a clean, empty state.",
+        confirmText:"Delete Everything", danger:true,
+        onConfirm: ()=>{
+          try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+          App.data = createEmptyData();
+          saveData(); applyTheme(); applyDensity();
+          closeModal();
+          setPage("home");
+          showToast("All data deleted.");
+        }
+      });
+      break;
+    }
+  }
+}
+
+/* =========================================================================
+   ROUTER
+========================================================================= */
+function renderPage(page){
+  switch(page){
+    case "home": renderHome(); break;
+    case "goals": renderGoalsPage(); break;
+    case "funds": renderFundsPage(); break;
+    case "milestones": renderMilestonesPage(); break;
+    case "analytics": renderAnalyticsPage(); break;
+    case "settings": renderSettingsPage(); break;
+  }
+}
+function setPage(page){
+  App.state.page = page;
+  renderNav();
+  document.querySelectorAll(".page").forEach(p=> p.classList.toggle("active-page", p.id==="page-"+page));
+  renderPage(page);
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarBackdrop").classList.remove("show");
+  window.scrollTo(0,0);
+}
+
+/* =========================================================================
+   GLOBAL EVENT WIRING
+========================================================================= */
+document.addEventListener("click", function(e){
+  const el = e.target.closest("[data-action]");
+  if(el){ handleAction(el.dataset.action, el, el.dataset); }
+
+  // icon/color pickers
+  const pickIcon = e.target.closest("[data-pick-icon]");
+  if(pickIcon){
+    const targetInput = document.getElementById(pickIcon.dataset.target);
+    if(targetInput){ targetInput.value = pickIcon.dataset.pickIcon; }
+    pickIcon.parentElement.querySelectorAll(".pick-btn").forEach(b=>{b.classList.remove("selected"); b.setAttribute("aria-pressed","false");});
+    pickIcon.classList.add("selected"); pickIcon.setAttribute("aria-pressed","true");
+  }
+  const pickColor = e.target.closest("[data-pick-color]");
+  if(pickColor){
+    const targetInput = document.getElementById(pickColor.dataset.target);
+    if(targetInput){ targetInput.value = pickColor.dataset.pickColor; }
+    pickColor.parentElement.querySelectorAll(".swatch").forEach(b=>{b.classList.remove("selected"); b.setAttribute("aria-pressed","false");});
+    pickColor.classList.add("selected"); pickColor.setAttribute("aria-pressed","true");
+  }
+  // milestone type segmented
+  const msType = e.target.closest("#ms-type-seg button");
+  if(msType){
+    document.getElementById("ms-type").value = msType.dataset.type;
+    msType.parentElement.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+    msType.classList.add("active");
+    document.getElementById("ms-value-label").textContent = msType.dataset.type==="percent" ? "Percent of goal (%)" : "Fixed amount";
+  }
+
+  // close dropdown menus on outside click
+  if(App.state.openMenuId && !e.target.closest(".card-menu")) closeOpenMenu();
+}, false);
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "Enter" || e.key === " "){
+    const el = e.target.closest('[role="button"][data-action]');
+    if(el){ e.preventDefault(); handleAction(el.dataset.action, el, el.dataset); }
+  }
+  if(e.key === "Escape"){
+    if(modalRoot.classList.contains("open")) closeModal();
+    closeOpenMenu();
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebarBackdrop").classList.remove("show");
+  }
+}, false);
+
+document.addEventListener("submit", function(e){
+  if(e.target.id === "goal-form"){ e.preventDefault(); submitGoalForm(); }
+  else if(e.target.id === "fund-form"){ e.preventDefault(); submitFundForm(); }
+  else if(e.target.id === "contribution-form"){ e.preventDefault(); submitContributionForm(); }
+  else if(e.target.id === "milestone-form"){ e.preventDefault(); submitMilestoneForm(); }
+  else if(e.target.id === "name-form"){ e.preventDefault(); submitNameForm(); }
+}, false);
+
+modalRoot.addEventListener("click", function(e){ if(e.target === modalRoot) closeModal(); });
+
+document.getElementById("hamburgerBtn").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("sidebarBackdrop").classList.add("show");
+});
+document.getElementById("sidebarCloseBtn").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarBackdrop").classList.remove("show");
+});
+document.getElementById("sidebarBackdrop").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarBackdrop").classList.remove("show");
+});
+document.getElementById("importFileInput").addEventListener("change", function(e){
+  const file = e.target.files && e.target.files[0];
+  if(file) handleImportFile(file);
+  e.target.value = "";
+});
+
+/* =========================================================================
+   BOOT
+========================================================================= */
+function boot(){
+  App.data = loadData();
+  saveData();
+  applyTheme();
+  applyDensity();
+  renderNav();
+  renderPage("home");
+  scheduleDemoReset();
+}
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
+
+})();
+</script>
+</body>
+</html>
